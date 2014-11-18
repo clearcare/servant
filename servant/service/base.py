@@ -3,11 +3,13 @@ class Service(object):
     version = 1
 
     def __init__(self):
-        self._setup_actions()
+        pass
 
-    def _setup_actions(self):
-        for name, actionclass in self.__class__.action_map.iteritems():
-            setattr(self, name, actionclass())
+    def __getattr__(self, name):
+        actionclass = self.__class__.action_map.get(name)
+        if not actionclass:
+            raise AttributeError
+        return actionclass._do_run
 
     def describe(self):
         return u'%s, version %d' % (
