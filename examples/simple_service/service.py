@@ -1,16 +1,21 @@
-from datetime import datetime
-
+import time
 import requests
+
+from datetime import datetime
 
 import servant.fields
 
-from servant.service import Service
+from servant.service import Service, HttpService
 from servant.service.actions import (
         Action,
         stdactions,
 )
 
 from schematics.exceptions import ValidationError
+
+def now():
+    return time.time()
+
 
 class WeatherSearchAction(Action):
 
@@ -26,10 +31,6 @@ class WeatherSearchAction(Action):
         )
         return response.json()
 
-
-import time
-def now():
-    return time.time()
 
 _fake_response = {u'calctime': 0.8057,
  u'city_id': 2885679,
@@ -89,7 +90,8 @@ class HistoricalWeatherSearchAction(Action):
             in_response=True,
             max_length=40,
     )
-    calctime = servant.fields.DecimalField(
+    #calctime = servant.fields.DecimalField(
+    calctime = servant.fields.FloatField(
             serialized_name='response_time',
             in_response=True,
     )
@@ -165,7 +167,11 @@ class TheaterListingAction(Action):
         }
 
 
-class SimpleService(Service):
+
+BaseService = HttpService
+#BaseService = Service
+
+class SimpleService(BaseService):
 
     name = 'simple_service'
     version = 1
