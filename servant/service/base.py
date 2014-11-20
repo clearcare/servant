@@ -1,6 +1,7 @@
 import requests
 import json
 
+
 class Service(object):
 
     def __init__(self):
@@ -20,13 +21,13 @@ class Service(object):
     def get_transport(self):
         return Transport()
 
-    def get_client(self):
-        if not self.__client:
-            transport = self.get_transport()
-            self.__client = Client(transport,
-                    action_map=self.__class__.action_map)
-
-        return  self.__client
+#    def get_client(self):
+#        if not self.__client:
+#            transport = self.get_transport()
+#            self.__client = Client(transport,
+#                    action_map=self.__class__.action_map)
+#
+#        return  self.__client
 
 
 class Client(object):
@@ -63,6 +64,8 @@ class Client(object):
     def prepare_response(self, service_response):
         return service_response
 
+    def send(self, **kwargs):
+        pass
 
 
 import json

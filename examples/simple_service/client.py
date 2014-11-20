@@ -7,11 +7,11 @@ from pprint import pprint as pp
 #from simple_service.service import SimpleService, HttpService
 import servant.client
 
-client = servant.client.Client('SimpleService')
+client = servant.client.Client('simple_service', version=1)
 
 try:
     if sys.argv[1].lower() == 'http':
-        client.set_transport('http')
+        client.configure('http', host='localhost', port=8888)
 except Exception:
     pass
 
