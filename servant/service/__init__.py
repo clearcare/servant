@@ -1,4 +1,4 @@
 from .base import (
         Service,
-        HttpService,
+        Server,
 )

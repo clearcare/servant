@@ -5,7 +5,7 @@ from datetime import datetime
 
 import servant.fields
 
-from servant.service import Service, HttpService
+from servant.service.base import Service
 from servant.service.actions import (
         Action,
         stdactions,
@@ -168,10 +168,7 @@ class TheaterListingAction(Action):
 
 
 
-BaseService = HttpService
-#BaseService = Service
-
-class SimpleService(BaseService):
+class SimpleService(Service):
 
     name = 'simple_service'
     version = 1
@@ -183,3 +180,8 @@ class SimpleService(BaseService):
             'get_historical_weather': HistoricalWeatherSearchAction,
             'get_theater_listing': TheaterListingAction,
     }
+
+
+if __name__ == '__main__':
+    server = HttpService()
+    server.serve_forever()

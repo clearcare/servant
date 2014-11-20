@@ -1,20 +1,6 @@
 import requests
 import json
 
-class Transport(object):
-
-    def send(self, data, actionclass):
-        return actionclass._do_run(**data)
-
-
-class HttpTransport(Transport):
-
-    def send(self, data, actionclass):
-        url = 'http://localhost:8888'
-        response = requests.post(url, data=data)
-        return response.json()
-
-
 class Service(object):
 
     def __init__(self):
@@ -43,12 +29,6 @@ class Service(object):
         return  self.__client
 
 
-
-class HttpService(Service):
-    def get_transport(self):
-        return HttpTransport()
-
-
 class Client(object):
 
     def __init__(self, transport, action_map):
@@ -62,6 +42,9 @@ class Client(object):
     def __make_entry(self, actionclass):
         def call_service(**kwargs):
             # 1. prepare request
+            import pdb; pdb.set_trace()
+            # this should transform the data into the necessary format, and
+            # decorate it with addition info about the service
             request = self.prepare_request(**kwargs)
 
             # 2. send request
@@ -81,33 +64,66 @@ class Client(object):
         return service_response
 
 
-class Server(object):
 
-    def __init__(self, transport):
-        self.__transport = transport
-
-
-
-
+import json
+import sys
+import SimpleHTTPServer
+import SocketServer
+import urlparse
 
 
 
+class EchoHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('Content-type','text/json')
+        self.end_headers()
+
+        length = int(self.headers['Content-Length'])
+        post_data = urlparse.parse_qs(self.rfile.read(length).decode('utf-8'))
+
+        print('Path -> ' + self.path)
+
+        for key, value in post_data.iteritems():
+            print('%s: %s' % (key, value))
+
+        resp = json.dumps(post_data)
+        self.wfile.write(resp)
 
 
-#    def __getattr__(self, name):
-#        actionclass = self.__class__.action_map.get(name)
-#        if not actionclass:
-#            raise AttributeError("'%s' object has no attribute '%s'" % (
-#                    self.__class__.__name__, name))
+class ServiceHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('Content-type','text/json')
+        self.end_headers()
+
+        length = int(self.headers['Content-Length'])
+        post_data = urlparse.parse_qs(self.rfile.read(length).decode('utf-8'))
+
+
+
+class Server(Service):
+
+    def __init__(self, host='localhost', port=8888):
+        super(Server, self).__init__()
+        self.host = host
+        self.port = port
+
+#    def send(self, data, actionclass):
+#        return actionclass._do_run(**data)
 #
-#        _do_run_method = getattr(actionclass, '_do_run')
-#        if not _do_run_method or (
-#                _do_run_method and not callable(_do_run_method)):
-#            raise AttributeError("'%s' object has no attribute '%s'" % (
-#                    self.__class__.__name__, name))
-#
-#        import pdb; pdb.set_trace()
-#            #jaction_instance = actionclass()
-#        return actionclass._do_run
 
+    def serve_forever(self):
+        httpd = SocketServer.TCPServer(
+                (self.host, self.port),
+                EchoHandler)
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            httpd.shutdown()
+
+    def get_transport(self):
+        return HttpTransport(self)
 
