@@ -6,8 +6,9 @@ from ..serializers import JsonSerializer
 
 class Client(object):
 
-    def __init__(self, service_name, **kwargs):
+    def __init__(self, service_name, service_version=1, **kwargs):
         self.service_name = service_name
+        self.service_version = service_version
         self.service_meta = kwargs
 
         self.__transport = None
@@ -15,6 +16,15 @@ class Client(object):
 
     def __getattr__(self, name):
         return self.send(name)
+
+    def is_configured(self):
+        return self.__transport is not None
+
+    def configure(self, broker_type, **kwargs):
+        if self.__transport is None:
+            self.__transport = self.get_transport(broker_type)
+            self.__transport.configure(**kwargs)
+            self.__transport.connect()
 
     def send(self, name):
         def make_call(**kwargs):
@@ -32,27 +42,6 @@ class Client(object):
 
         return make_call
 
-    @property
-    def is_configured(self):
-        return self.__transport is not None
-
-    def configure(self, broker_type, **kwargs):
-        if not self.is_configured:
-            self.__transport = self.get_transport(broker_type)
-            self.__transport.configure(**kwargs)
-            self.__transport.connect()
-
-    def get_transport(self, broker_type, **kwargs):
-        return get_client_transport_class_by_name(broker_type)
-
-    def set_transport(self, name):
-        pass
-
-    def get_serializer(self):
-        if not self.__serializer:
-            self.__serializer = JsonSerializer()
-        return self.__serializer
-
     def prepare_request(self, action_name, **kwargs):
         request = {
                 'service_name': self.service_name,
@@ -65,12 +54,24 @@ class Client(object):
                         'action_name': action_name,
                         'arguments': kwargs,
                     }
-                ]
+                ],
+                'request': request,
         }
+
+    def get_serializer(self):
+        if not self.__serializer:
+            self.__serializer = JsonSerializer()
+        return self.__serializer
 
     def serialize_request(self, payload):
         serializer = self.get_serializer()
         return serializer.serialize(payload)
+
+    def get_transport(self, broker_type, **kwargs):
+        return get_client_transport_class_by_name(broker_type)
+
+    def set_transport(self, name):
+        pass
 
     def prepare_response(self, service_response):
         return service_response

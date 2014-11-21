@@ -1,4 +1,4 @@
 from service import SimpleService
 
 server = SimpleService()
-application = server.handle_request
+application = server.get_wsgi_application

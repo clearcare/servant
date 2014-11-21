@@ -1,11 +1,9 @@
 import sys
-sys.path.append('../../')
-
 import time
-from pprint import pprint as pp
 
-#from simple_service.service import SimpleService, HttpService
 import servant.client
+
+from pprint import pprint as pp
 
 client = servant.client.Client('simple_service', version=1)
 
@@ -15,10 +13,13 @@ try:
 except Exception:
     pass
 
-#print client.ping()
-#print client.echo(name='brianz')
-#print client.echo(name='brianz', age=41, is_awesome=True)
-#print client.get_weather(city='denver', state='CO')
+if not client.is_configured():
+    client.configure('local')
+
+print client.ping()
+print client.echo(name='brianz')
+print client.echo(name='brianz', age=41, is_awesome=True)
+print client.get_weather(city='denver', state='CO')
 
 n = time.time() - (3600 * 4)
 

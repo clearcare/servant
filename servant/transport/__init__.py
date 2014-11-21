@@ -5,6 +5,9 @@ class HttpTransport(object):
     def __init__(self):
         self.__url = 'http://localhost:8000'
 
+    def __repr__(self):
+        return 'HttpTransport at %s' % (self.__url, )
+
     def configure(self, host='localhost', port=8000, scheme='http'):
         self.__url = '%s://%s:%s' % (scheme, host, port)
 
