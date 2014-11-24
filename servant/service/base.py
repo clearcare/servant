@@ -1,7 +1,10 @@
 import time
 import requests
 
-from ..exceptions import ServantException
+from ..exceptions import (
+        ActionFieldError,
+        ServantException,
+)
 from ..serializers import JsonSerializer
 from ..transport import get_server_transport_class_by_name
 from ..utils import generate_cid
@@ -35,32 +38,30 @@ class Service(object):
         return get_server_transport_class_by_name(name)
 
     def get_wsgi_application(self, environ, start_response):
-        #print dir(environ['wsgi.input'])
-        payload = environ['wsgi.input'].read()
-        response = self.handle_request(payload)
-        #print payload
-        status = '200'
-        #r = json.dumps({'name': 'brian'})
+        status = '200 '
         headers = [
-                ('Content-type', 'application/json'),
-                #('Content-Length
-                ]
+                ('Content-Type', 'application/json'),
+        ]
         start_response(status, headers)
-        print 'returning'
-        print response
-        print
+
+        content_length = int(environ['CONTENT_LENGTH'])
+        payload = environ['wsgi.input'].read(content_length)
+        response = self.handle_request(payload)
         return [response]
 
     def handle_request(self, payload):
         self.__start_time = time.time()
         self.begin_response()
+        action_results = []
+
         try:
             deserialized_payload = self.deserialize_request(payload)
             actions = self.prepare_request(deserialized_payload)
             action_results = self.run_actions(actions)
         except ServantException, err:
-            self.handle_error(response)
-            action_results = []
+            self.handle_error(err)
+        except Exception, err:
+            self.handle_error(err)
 
         self.finalize_response(action_results)
         return self.serialize_response(self._response)
@@ -115,11 +116,18 @@ class Service(object):
 
     def run_single_action(self, action_class, action):
         args = action.get('arguments', {})
-        results = action_class._do_run(**args)
+        field_errors = None
+        results = None
+        try:
+            results = action_class._do_run(**args)
+        except ActionFieldError, err:
+            field_errors = self.handle_field_error(err)
+
         return {
                 'action_name': action['action_name'],
                 'errors': None,
                 'results': results,
+                'field_errors': field_errors,
         }
 
     def _get_action_class(self, action, action_num):
@@ -166,6 +174,24 @@ class Service(object):
             'error_type': error_type,
         })
 
+    def handle_field_error(self, exc, error_type=None):
+        errs = {}
+        for errmsg in exc.messages:
+            # Some exceptions have a messages attrs while other don't. Either
+            # way, the results will be a dict.
+            if hasattr(errmsg, 'messages'):
+                errmsg = errmsg.messages
+
+            for fieldname, err in errmsg.iteritems():
+                field_errors = errs.get(fieldname, [])
+                field_errors.append({
+                        'error': err,
+                        'hint': err,
+                })
+                errs[fieldname] = field_errors
+
+        return errs
+
     def handle_error(self, exc):
         pass
 #        "response": {
@@ -180,27 +206,3 @@ class Service(object):
         if not self.__serializer:
             self.__serializer = JsonSerializer()
         return self.__serializer
-
-#    def __attach_action_map(self, action_map):
-#        for name, actionclass in action_map.iteritems():
-#            setattr(self, name, self.__make_entry(actionclass))
-#
-#    def __make_entry(self, actionclass):
-#        def call_service(**kwargs):
-#            # 1. prepare request
-#            import pdb; pdb.set_trace()
-#            # this should transform the data into the necessary format, and
-#            # decorate it with addition info about the service
-#            request = self.prepare_request(**kwargs)
-#
-#            # 2. send request
-#            service_response = self.__transport.send(request, actionclass)
-#
-#            # 3. prepare response
-#            response = self.prepare_response(service_response)
-#
-#            return response
-#
-#        return call_service
-#
-#

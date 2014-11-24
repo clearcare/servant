@@ -1,8 +1,11 @@
 from schematics.models import Model
 from schematics.exceptions import (
         ConversionError,
+        ModelValidationError,
         ValidationError,
 )
+
+from ...exceptions import ActionFieldError
 
 
 class ActionResponse(object):
@@ -23,7 +26,7 @@ class Action(Model):
             self = klass(raw_data=rpc_kwargs,
                     deserialize_mapping=deserialize_mapping, strict=strict)
         except ConversionError, err:
-            return ActionResponse(err.messages).data
+            raise ActionFieldError(err)
 
         # now, after instantiation, fields will have been transformed and
         # computed based on rpc_kwargs inputs, which are the fields passed to
@@ -38,10 +41,11 @@ class Action(Model):
 
         # revalidate since the run method could have attached some new
         # attributes
-        if self.is_valid():
+        try:
+            self.validate()
             final_results = self.finalize_results()
-        else:
-            final_results = self.handle_errors()
+        except ModelValidationError, err:
+            raise ActionFieldError(err)
 
         return ActionResponse(final_results).data
 

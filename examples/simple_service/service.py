@@ -138,6 +138,7 @@ class TheaterListingAction(Action):
     )
     theater_name = servant.fields.StringField(
             in_response=True,
+            max_length=12
     )
     movies = servant.fields.ListField(
             servant.fields.ModelField(MovieField),
@@ -156,16 +157,12 @@ class TheaterListingAction(Action):
                     'director': 'Peter Farrelly, Bobby Farrelly',
                     'release_date': datetime(2014, 11, 5)},
                 ),
+                'brian',
         ]
 
     def run(self, **kwargs):
         self.movies = self.get_movies_from_db(self.theater_id)
-        return {
-                'theater_name': u'Cinemark Fort Collins 16',
-                'movies': self.movies,
-
-        }
-
+        self.theater_name = u'Cinemark Fort Collins 16'
 
 
 class SimpleService(Service):
@@ -180,8 +177,3 @@ class SimpleService(Service):
             'get_historical_weather': HistoricalWeatherSearchAction,
             'get_theater_listing': TheaterListingAction,
     }
-
-
-if __name__ == '__main__':
-    server = HttpService()
-    server.serve_forever()
