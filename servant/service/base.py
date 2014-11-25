@@ -59,9 +59,9 @@ class Service(object):
             actions = self.prepare_request(deserialized_payload)
             action_results = self.run_actions(actions)
         except ServantException, err:
-            self.handle_error(err)
+            self.handle_service_error(err)
         except Exception, err:
-            self.handle_error(err)
+            self.handle_service_error(err)
 
         self.finalize_response(action_results)
         return self.serialize_response(self._response)
@@ -83,7 +83,7 @@ class Service(object):
         try:
            return serializer.deserialize(payload)
         except ServantException, err:
-            self.add_service_error(err, SERVER_ERROR)
+            self.handle_service_error(err)
 
     def serialize_response(self, response):
         serializer = self.get_serializer()
@@ -167,6 +167,10 @@ class Service(object):
         except KeyError:
             return generate_cid()
 
+    def handle_service_error(self, exc):
+        err = u'Unexpected service error: %s' % (exc, )
+        self.add_service_error(err, SERVER_ERROR)
+
     def add_service_error(self, exc, error_type):
         self._service_errors.append({
             'error': unicode(exc),
@@ -191,16 +195,6 @@ class Service(object):
                 errs[fieldname] = field_errors
 
         return errs
-
-    def handle_error(self, exc):
-        pass
-#        "response": {
-#            "has_errors": true,
-#            "response_time": "1.2325",
-#            "result": "PARTIAL_SUCCESS",
-#            "service_name": "cc.payment_processing",
-#            "correlation_id": "0e197907-6e8c-11e4-9e77-3c15c2cc31d0"
-#        }
 
     def get_serializer(self):
         if not self.__serializer:

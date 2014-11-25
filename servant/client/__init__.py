@@ -20,19 +20,26 @@ class Client(object):
     def is_configured(self):
         return self.__transport is not None
 
-    def configure(self, broker_type, **kwargs):
+    def configure(self, broker_type='local', **kwargs):
         if self.__transport is None:
             self.__transport = self.get_transport(broker_type)
             self.__transport.configure(**kwargs)
             self.__transport.connect()
 
     def send(self, name):
+        if not self.is_configured():
+            self.configure(broker_type='local',
+                    service_name=self.service_name,
+                    service_version=self.service_version,
+                    service_meta=self.service_meta)
+
         def make_call(**kwargs):
             payload = self.prepare_request(action_name=name, **kwargs)
 
             request = self.serialize_request(payload)
 
             # 2. send request
+            #import pdb; pdb.set_trace()
             service_response = self.__transport.send(request)
 
             # 3. prepare response
