@@ -6,4 +6,6 @@ See the `examples` folder to see what a service server and client look like.
  
 **_ATTENTION!_**
 
-Transport protocol is still highly experimental and in flux. Eventually the transport payload should be standardized so that clients/servers can be authored in different languates.
+This is highly experimental and in flux. Eventually the transport payload
+should be standardized so that clients/servers can be authored in different
+languates.
