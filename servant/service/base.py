@@ -66,6 +66,36 @@ class Service(object):
         self.finalize_response(action_results)
         return self.serialize_response(self._response)
 
+    def run_actions(self, actions):
+        action_results = []
+        for i, action in enumerate(actions):
+            action_class = self._get_action_class(action, i)
+            if not action_class:
+                action_result = {}
+            else:
+                action_result = self.run_single_action(action_class, action)
+
+            action_results.append(action_result)
+
+        return action_results
+
+    def run_single_action(self, action_class, action):
+        args = action.get('arguments', {})
+        field_errors = None
+        results = None
+        try:
+            results = action_class._do_run(**args)
+        except ActionFieldError, err:
+            field_errors = self.handle_field_error(err)
+
+        return {
+                'action_name': action['action_name'],
+                'errors': None,
+                'results': results,
+                'field_errors': field_errors,
+        }
+
+
     def begin_response(self):
         self._response = {}
         self._service_errors = []
@@ -101,35 +131,6 @@ class Service(object):
 
         return actions
 
-    def run_actions(self, actions):
-        action_results = []
-        for i, action in enumerate(actions):
-            action_class = self._get_action_class(action, i)
-            if not action_class:
-                action_result = {}
-            else:
-                action_result = self.run_single_action(action_class, action)
-
-            action_results.append(action_result)
-
-        return action_results
-
-    def run_single_action(self, action_class, action):
-        args = action.get('arguments', {})
-        field_errors = None
-        results = None
-        try:
-            results = action_class._do_run(**args)
-        except ActionFieldError, err:
-            field_errors = self.handle_field_error(err)
-
-        return {
-                'action_name': action['action_name'],
-                'errors': None,
-                'results': results,
-                'field_errors': field_errors,
-        }
-
     def _get_action_class(self, action, action_num):
         action_name = action.get('action_name')
         if not action_name:
@@ -139,7 +140,7 @@ class Service(object):
 
         action_class = self.__class__.action_map.get(action_name)
         if not action_class:
-            self.add_service_error('No action named "%s" found' % (action, ),
+            self.add_service_error('No action named "%s" found' % (action_name, ),
                     CLIENT_ERROR)
             return
 

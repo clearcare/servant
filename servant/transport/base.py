@@ -17,13 +17,6 @@ class BaseTransport(object):
     def send(self, data):
         raise NotImplementedError('Subclasses must override this method')
 
-#    def handle_errors(self, response):
-#        pass
-#
-#    def is_error(self, response):
-#        pass
-
-
 
 class HttpTransport(BaseTransport):
 
@@ -42,7 +35,7 @@ class HttpTransport(BaseTransport):
     def send(self, data):
         headers = {'content-type': 'application/json'}
         response = requests.post(self.__url, data=data, headers=headers)
-        return response.json()
+        return response.text
 
 
 class LocalTransport(BaseTransport):

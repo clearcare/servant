@@ -26,7 +26,8 @@ class Client(object):
             self.__transport.configure(**kwargs)
             self.__transport.connect()
 
-    def send(self, name):
+    def send(self, action_name):
+        # by default, configure for local calls
         if not self.is_configured():
             self.configure(broker_type='local',
                     service_name=self.service_name,
@@ -34,17 +35,10 @@ class Client(object):
                     service_meta=self.service_meta)
 
         def make_call(**kwargs):
-            payload = self.prepare_request(action_name=name, **kwargs)
-
+            payload = self.prepare_request(action_name=action_name, **kwargs)
             request = self.serialize_request(payload)
-
-            # 2. send request
-            #import pdb; pdb.set_trace()
             service_response = self.__transport.send(request)
-
-            # 3. prepare response
             response = self.prepare_response(service_response)
-
             return response
 
         return make_call
@@ -81,10 +75,11 @@ class Client(object):
         pass
 
     def prepare_response(self, service_response):
-        return service_response
+        return self.deserialize_response(service_response)
 
-    def deserialize_response(self):
-        pass
+    def deserialize_response(self, response):
+        serializer = self.get_serializer()
+        return serializer.deserialize(response)
 
     def handle_exception(self):
         pass
