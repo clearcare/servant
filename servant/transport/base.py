@@ -94,5 +94,3 @@ class LocalTransport(BaseTransport):
     def send(self, request):
         return self.__service.handle_request(request)
 
-
-

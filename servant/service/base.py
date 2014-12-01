@@ -2,11 +2,11 @@ import time
 import requests
 
 from ..exceptions import (
+        ActionError,
         ActionFieldError,
         ServantException,
 )
 from ..serializers import JsonSerializer
-from ..transport import get_server_transport_class_by_name
 from ..utils import generate_cid
 
 SERVER_ERROR = 'SERVER_ERROR'
@@ -34,39 +34,44 @@ class Service(object):
                 self.__class__.name,
                 self.__class__.version)
 
-    def get_transport(self, broker_type):
-        return get_server_transport_class_by_name(name)
-
-    def get_wsgi_application(self, environ, start_response):
-        status = '200 '
-        headers = [
-                ('Content-Type', 'application/json'),
-        ]
-        start_response(status, headers)
-
-        content_length = int(environ['CONTENT_LENGTH'])
-        payload = environ['wsgi.input'].read(content_length)
-        response = self.handle_request(payload)
-        return [response]
-
     def handle_request(self, payload):
+        """Entry point for actually running a service action.
+
+        This method is called when running any of the application backends (eg,
+        wsgi/http, local). It's important to note that any exception will be
+        digest here so that the backend can reply with a suitable response to
+        the client.
+
+        :param payload: A serialized request object from a client, typically a
+                        json encoded string
+        :type payload: string
+        :rtype:
+
+        """
         self.__start_time = time.time()
         self.begin_response()
         action_results = []
 
         try:
-            deserialized_payload = self.deserialize_request(payload)
-            actions = self.prepare_request(deserialized_payload)
+            deserialized_request_payload = self.deserialize_request(payload)
+            actions = self.prepare_request(deserialized_request_payload)
             action_results = self.run_actions(actions)
         except ServantException, err:
             self.handle_service_error(err)
         except Exception, err:
-            self.handle_service_error(err)
+            self.handle_unexpected_error(err)
 
         self.finalize_response(action_results)
         return self.serialize_response(self._response)
 
     def run_actions(self, actions):
+        """Loop through and execute a list of actions in a request.
+
+        :param actions: list of actions to exectute
+        :type actions: list of action dicts
+        :rtype: list of action results
+
+        """
         action_results = []
         for i, action in enumerate(actions):
             action_class = self._get_action_class(action, i)
@@ -80,11 +85,33 @@ class Service(object):
         return action_results
 
     def run_single_action(self, action_class, action):
+        """Parses out a single request action along with kwargs and runs the
+        requested action.
+
+        Along with ``handle_request``, this is another important method which
+        is responsible for actually executing an individual action. Most of the
+        errors here should be of the type ``ActionFieldError``, which is raised
+        from the client when a field in the model doesn't validate. Note that
+        a field may be invalid upon invocation (user passes in invalid data) or
+        after the fact.
+
+        :param action_class: An action class, in other words, a single service
+                             endpoint which will fulfill the request.
+        :type action_class: class object which subclasses ``Action`` and has a
+                            ``run`` method.
+        :param action: An action dict which describes the action's input
+        :type action: dict
+        :rtype: response dict
+
+        """
         args = action.get('arguments', {})
         field_errors = None
         results = None
+
         try:
-            results = action_class._do_run(**args)
+            results = action_class._do_run(service=self, **args)
+        except ActionError, err:
+            self.handle_client_error(err)
         except ActionFieldError, err:
             field_errors = self.handle_field_error(err)
 
@@ -95,39 +122,85 @@ class Service(object):
                 'field_errors': field_errors,
         }
 
+    def get_wsgi_application(self, environ, start_response):
+        """Pre-baked hook for running wsgi applications via http transport."""
+        # TODO - This could eventually be moved out into a separate service object.
+
+        # Note, space is required after status to conform to wsgi spec.
+        status = '200 '
+        headers = [
+                ('Content-Type', 'application/json'),
+        ]
+        start_response(status, headers)
+
+        content_length = int(environ['CONTENT_LENGTH'])
+        payload = environ['wsgi.input'].read(content_length)
+        response = self.handle_request(payload)
+        return [response]
 
     def begin_response(self):
         self._response = {}
         self._service_errors = []
 
     def finalize_response(self, action_results):
+        """Add in the action results into the response and perform other
+        necessary finalization.
+
+        :param action_results: list of actions results
+        :type action_results: list of action result dicts
+
+        """
         self._response['actions'] = action_results
         self._response['response'] = {
                 'response_time': '%0.5f' % (time.time() - self.__start_time, ),
                 'correlation_id': self._cid,
                 'errors': self._service_errors or None,
+                'version': self.__class__.version,
+                'name': self.__class__.name,
         }
 
-    def deserialize_request(self, payload):
+    def deserialize_request(self, request_payload):
+        """Deserialize a request object from a client.
+
+        :param payload: A serialized request object from a client, typically a
+                        json encoded string
+        :type payload: string
+        :rtype: dict
+
+        """
         serializer = self.get_serializer()
         try:
-           return serializer.deserialize(payload)
+           return serializer.deserialize(request_payload)
         except ServantException, err:
-            self.handle_service_error(err)
+            self.handle_unexpected_error(err)
 
     def serialize_response(self, response):
+        """Serialize the final response object as a last step before returning
+        to the client.
+
+        :param response: final response dictionary
+        :type response: dict
+        :rtype: serialized string
+
+        """
         serializer = self.get_serializer()
         return serializer.serialize(response)
 
-    def prepare_request(self, request):
-        # request is the deserialized payload
-        actions = self._get_actions_from_request(request)
+    def prepare_request(self, deserialized_request_payload):
+        """Prepare the client's request for execution.
+
+        :param deserialized_request_payload: Client's request
+        :type deserialized_request_payload: dict
+        :rtype: A list of actions to exectute
+
+        """
+        actions = self._get_actions_from_request(deserialized_request_payload)
         if not actions:
             return
 
         # self._validate_service_name(request)
         # get timeouts and other things
-        self._cid = self._get_correlation_id(request)
+        self._cid = self._get_correlation_id(deserialized_request_payload)
 
         return actions
 
@@ -169,17 +242,47 @@ class Service(object):
             return generate_cid()
 
     def handle_service_error(self, exc):
-        err = u'Unexpected service error: %s' % (exc, )
-        self.add_service_error(err, SERVER_ERROR)
+        """Add an error message to the list of request errors.
 
-    def add_service_error(self, exc, error_type):
-        self._service_errors.append({
-            'error': unicode(exc),
-            'hint': unicode(exc),
-            'error_type': error_type,
-        })
+        This method should be invoked when there is an error that has a
+        request-wide scope and is within the realm of the server.
 
-    def handle_field_error(self, exc, error_type=None):
+        :param exc: An ``Exception`` object which should have subclassed
+                    ``ServantException``
+
+        """
+        self.add_service_error(err, error_type=SERVER_ERROR)
+
+    def handle_client_error(self, exc):
+        """Add an error message to the list of request errors.
+
+        This method should be invoked when there is an error that has a
+        request-wide scope and is within the realm of the client, meaning the
+        client has the ability to correct the problem.
+
+        :param exc: An ``Exception`` object which should have subclassed
+                    ``ServantException``
+        """
+        self.add_service_error(exc, error_type=CLIENT_ERROR)
+
+    def handle_unexpected_error(self, exc):
+        """Handle an unexpected error.
+
+        :param exc: An ``Exception`` object which should have subclassed
+                    ``ServantException``
+
+        """
+        self.add_service_error(exc, error_type=SERVER_ERROR,
+                error_prelude='Unexpected service error')
+
+    def handle_field_error(self, exc):
+        """Any field-level exceptions should be caught and this method called
+        in order to add client-readable errors.
+
+        :param exc: An ``ActionFieldError`` object
+        :rtype: dict mapping field names to a list of errors
+
+        """
         errs = {}
         for errmsg in exc.messages:
             # Some exceptions have a messages attrs while other don't. Either
@@ -189,6 +292,10 @@ class Service(object):
 
             for fieldname, err in errmsg.iteritems():
                 field_errors = errs.get(fieldname, [])
+
+                if isinstance(err, list):
+                    err = ', '.join(err)
+
                 field_errors.append({
                         'error': err,
                         'hint': err,
@@ -196,6 +303,21 @@ class Service(object):
                 errs[fieldname] = field_errors
 
         return errs
+
+    def add_service_error(self, exc, error_type, error_prelude='', hint=''):
+        if hasattr(exc, 'messages') and isinstance(exc.messages, list):
+            err = u', '.join(exc.messages)
+        else:
+            err = unicode(exc)
+
+        if error_prelude:
+            err = u'%s: %s' % (error_prelude, err)
+
+        self._service_errors.append({
+            'error': unicode(err),
+            'hint': unicode(hint),
+            'error_type': error_type,
+        })
 
     def get_serializer(self):
         if not self.__serializer:

@@ -8,17 +8,10 @@ from schematics.exceptions import (
 from ...exceptions import ActionFieldError
 
 
-class ActionResponse(object):
-
-    def __init__(self, data, **kwargs):
-        self.data = data
-
-
-
 class Action(Model):
 
     @classmethod
-    def _do_run(klass, raw_data=None, deserialize_mapping=None, strict=True,
+    def _do_run(klass, service, raw_data=None, deserialize_mapping=None, strict=True,
             **rpc_kwargs):
         rpc_kwargs = klass.pre_run(**rpc_kwargs)
 
@@ -47,7 +40,7 @@ class Action(Model):
         except ModelValidationError, err:
             raise ActionFieldError(err)
 
-        return ActionResponse(final_results).data
+        return final_results
 
     @classmethod
     def pre_run(klass, **kwargs):
