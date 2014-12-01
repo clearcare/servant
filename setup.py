@@ -1,8 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name = 'servant',
-    packages = ['servant'],
+    name='servant',
+    packages=find_packages(exclude=['test', 'examples', 'examples.*']),
     version = '0.0.1',
     description = 'A library for building services',
     author='Brian Zambrano',
