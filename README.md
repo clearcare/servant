@@ -1,5 +1,7 @@
 # Servant
 
+[![](https://ci.solanolabs.com:443/brianz/servant/badges/146458.png?badge_token=147011ef34ede2bd93439161171bb854b34f276e)](https://ci.solanolabs.com:443/brianz/servant/suites/146458)
+
 A python package to build services/microservices.
 
 See the `examples` folder to see what a service server and client look like.
