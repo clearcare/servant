@@ -1,7 +1,30 @@
+from pprint import pformat
+
+import bunch
+
 from ..transport import get_client_transport_class_by_name
 from ..utils import generate_cid
 
 from ..serializers import JsonSerializer
+
+
+class Response(bunch.Bunch):
+#    def __repr__(self):
+#        return pformat(self.toDict())
+
+    def is_error(self):
+        if self.response.errors:
+            return True
+
+        for a in self.actions:
+            if a.errors or a.field_errors:
+                return True
+
+        return False
+
+
+# monkeypatch Bunch
+bunch.Bunch = Response
 
 
 class Client(object):
@@ -75,7 +98,8 @@ class Client(object):
         pass
 
     def prepare_response(self, service_response):
-        return self.deserialize_response(service_response)
+        response = self.deserialize_response(service_response)
+        return Response.fromDict(response)
 
     def deserialize_response(self, response):
         serializer = self.get_serializer()
