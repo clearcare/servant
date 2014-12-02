@@ -1,0 +1,5 @@
+:tests:
+  - type: pytest
+    mode: basic
+:python:
+  :pip_requirements_file: test_requirements.txt
