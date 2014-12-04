@@ -80,6 +80,10 @@ class Service(object):
             else:
                 action_result = self.run_single_action(action_class, action)
 
+            # Add in the cid here even if the action failed or couldn't be
+            # found
+            action_result['action_cid'] = action['action_cid']
+
             action_results.append(action_result)
 
         return action_results
@@ -117,6 +121,7 @@ class Service(object):
 
         return {
                 'action_name': action['action_name'],
+                # TODO - need to handle errors here in case of other non-field errors
                 'errors': None,
                 'results': results,
                 'field_errors': field_errors,

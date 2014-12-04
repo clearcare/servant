@@ -1,5 +1,4 @@
-from collections import OrderedDict
-from .response import Response
+from .response import Response, FutureResponse
 from ..serializers import JsonSerializer
 from ..transport import get_client_transport_class_by_name
 from ..utils import generate_cid
@@ -9,7 +8,7 @@ class Batch(object):
 
     def __init__(self, client):
         self.__client = client
-        self.__requests = OrderedDict()
+        self.__responses = {}
 
     def __getattr__(self, name):
         return self.deferred_send(name)
@@ -17,15 +16,19 @@ class Batch(object):
     def deferred_send(self, action_name):
 
         def make_call(**kwargs):
-            self.__client.add_action(action_name=action_name, **kwargs)
             cid = generate_cid()
-            self.__requests[cid] = (action_name, kwargs)
-            return cid
+            self.__client.add_action(action_name=action_name, cid=cid, **kwargs)
+            future_response = FutureResponse()
+            self.__responses[cid] = future_response
+            return future_response
 
         return make_call
 
     def execute(self):
-        return self.__client.send()
+        response = self.__client.send()
+        for cid, result in response.action_results():
+            future_response = self.__responses[cid]
+            future_response.init_from_result(result)
 
 
 class Client(object):
@@ -80,11 +83,14 @@ class Client(object):
         response = self.prepare_response(service_response)
         return response
 
-    def add_action(self, action_name, **kwargs):
+    def add_action(self, action_name, cid=None, **kwargs):
         if self.__requests is None:
             self.__requests = []
+
+        cid = cid or generate_cid()
         self.__requests.append({
                 'action_name': action_name,
+                'action_cid': cid,
                 'arguments': kwargs,
         })
 

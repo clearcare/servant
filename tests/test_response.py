@@ -4,7 +4,7 @@ from servant.client import Response
 
 @pytest.fixture
 def response():
-    return Response.fromDict({
+    return Response({
         'actions': [
             {'action_name': 'charge_credit_card',
                 'errors': None,
@@ -21,7 +21,7 @@ def response():
 
 @pytest.fixture
 def double_response():
-    return Response.fromDict({
+    return Response({
         'actions': [
             {
                 'action_name': 'charge_credit_card',
@@ -51,7 +51,7 @@ def test_not_error():
         'actions': [ {'errors': None, 'field_errors': None} ],
         'response': {'errors': None},
     }
-    resp = Response.fromDict(d)
+    resp = Response(d)
     assert not resp.is_error()
     assert resp.errors is None
 
@@ -63,7 +63,7 @@ def test_error_from_2nd_action():
         ],
         'response': {'errors': None},
     }
-    resp = Response.fromDict(d)
+    resp = Response(d)
     assert resp.is_error()
     assert resp.errors is None
 
@@ -75,7 +75,7 @@ def test_error_from_2nd_action_field():
         ],
         'response': {'errors': None},
     }
-    resp = Response.fromDict(d)
+    resp = Response(d)
     assert resp.is_error()
     assert resp.errors is None
 
@@ -84,7 +84,7 @@ def test_error_from_response():
         'actions': [ {'errors': None, 'field_errors': None} ],
         'response': {'errors': 'There was an error'},
     }
-    resp = Response.fromDict(d)
+    resp = Response(d)
     assert resp.is_error()
     assert resp.errors == 'There was an error'
 
