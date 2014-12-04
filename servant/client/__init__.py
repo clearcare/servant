@@ -1,8 +1,32 @@
+from collections import OrderedDict
+from .response import Response
+from ..serializers import JsonSerializer
 from ..transport import get_client_transport_class_by_name
 from ..utils import generate_cid
 
-from ..serializers import JsonSerializer
-from .response import Response
+
+class Batch(object):
+
+    def __init__(self, client):
+        self.__client = client
+        self.__requests = OrderedDict()
+
+    def __getattr__(self, name):
+        return self.deferred_send(name)
+
+    def deferred_send(self, action_name):
+
+        def make_call(**kwargs):
+            self.__client.add_action(action_name=action_name, **kwargs)
+            cid = generate_cid()
+            self.__requests[cid] = (action_name, kwargs)
+            return cid
+
+        return make_call
+
+    def execute(self):
+        return self.__client.send()
+
 
 class Client(object):
 
@@ -13,9 +37,10 @@ class Client(object):
 
         self.__transport = None
         self.__serializer = None
+        self.__requests = None
 
     def __getattr__(self, name):
-        return self.send(name)
+        return self.send_single_action(name)
 
     def is_configured(self):
         return self.__transport is not None
@@ -26,7 +51,21 @@ class Client(object):
             self.__transport.configure(**kwargs)
             self.__transport.connect()
 
-    def send(self, action_name):
+    def batch(self):
+        return Batch(self)
+
+    def send_single_action(self, action_name):
+        def make_call(**kwargs):
+            self.add_action(action_name=action_name, **kwargs)
+            return self.send()
+
+        return make_call
+
+    def send(self):
+        """Prepare the request and send it off to the service via the
+        configured transport.
+
+        """
         # by default, configure for local calls
         if not self.is_configured():
             self.configure(broker_type='local',
@@ -34,30 +73,29 @@ class Client(object):
                     service_version=self.service_version,
                     service_meta=self.service_meta)
 
-        def make_call(**kwargs):
-            payload = self.prepare_request(action_name=action_name, **kwargs)
-            request = self.serialize_request(payload)
-            service_response = self.__transport.send(request)
-            response = self.prepare_response(service_response)
-            return response
+        payload = self.prepare_request()
+        request = self.serialize_request(payload)
+        ### TODO - need to handle connection errors and timeouts here
+        service_response = self.__transport.send(request)
+        response = self.prepare_response(service_response)
+        return response
 
-        return make_call
+    def add_action(self, action_name, **kwargs):
+        if self.__requests is None:
+            self.__requests = []
+        self.__requests.append({
+                'action_name': action_name,
+                'arguments': kwargs,
+        })
 
-    def prepare_request(self, action_name, **kwargs):
+    def prepare_request(self):
+        if not self.__requests:
+            raise Exception('No actions to execute')
         request = {
                 'service_name': self.service_name,
                 'service_version': self.service_version,
-                'correlation_id': generate_cid()
         }
-        return {
-                'actions': [
-                    {
-                        'action_name': action_name,
-                        'arguments': kwargs,
-                    }
-                ],
-                'request': request,
-        }
+        return {'actions': self.__requests, 'request': request}
 
     def get_serializer(self):
         if not self.__serializer:
@@ -76,7 +114,7 @@ class Client(object):
 
     def prepare_response(self, service_response):
         response = self.deserialize_response(service_response)
-        return Response.fromDict(response)
+        return Response(response)
 
     def deserialize_response(self, response):
         serializer = self.get_serializer()
