@@ -26,13 +26,31 @@ class Service(object):
             raise Exception('Services must contain an action_map attribute')
 
         self.__client = None
-
         self.__serializer = None
+        self._is_configured = None
+
+        self.configure()
+
+    def configure(self, *args, **kwargs):
+        """Configuration hook for services to utilize as needed."""
+        pass
 
     def describe(self):
         return u'%s, version %d' % (
                 self.__class__.name,
                 self.__class__.version)
+
+    def before_request(*args, **kwargs):
+        """Registers a function to run before each request."""
+        pass
+
+    def preprocess_request(self):
+        """Do any request-wide setup"""
+        pass
+
+    def postprocess_response(self, response):
+        """Do any request-wide teardown"""
+        pass
 
     def handle_request(self, payload):
         """Entry point for actually running a service action.
@@ -49,9 +67,18 @@ class Service(object):
 
         """
         self.__start_time = time.time()
-        self.begin_response()
+
+        # TODO - start_request signal
+
+        # hook for any type of setup
+        self.preprocess_request()
+
+        # response dictionary
+        response = self.begin_response()
+
         action_results = []
 
+        # this could be wrapped in process_response()
         try:
             deserialized_request_payload = self.deserialize_request(payload)
             actions = self.prepare_request(deserialized_request_payload)
@@ -61,8 +88,13 @@ class Service(object):
         except Exception, err:
             self.handle_unexpected_error(err)
 
-        self.finalize_response(action_results)
-        return self.serialize_response(self._response)
+        self.finalize_response(response, action_results)
+
+        self.postprocess_response(response)
+
+        # TODO - end_request signal
+
+        return self.serialize_response(response)
 
     def run_actions(self, actions):
         """Loop through and execute a list of actions in a request.
@@ -139,10 +171,10 @@ class Service(object):
         return [response]
 
     def begin_response(self):
-        self._response = {}
         self._service_errors = []
+        return {}
 
-    def finalize_response(self, action_results):
+    def finalize_response(self, response, action_results):
         """Add in the action results into the response and perform other
         necessary finalization.
 
@@ -150,8 +182,8 @@ class Service(object):
         :type action_results: list of action result dicts
 
         """
-        self._response['actions'] = action_results
-        self._response['response'] = {
+        response['actions'] = action_results
+        response['response'] = {
                 'response_time': '%0.5f' % (time.time() - self.__start_time, ),
                 'correlation_id': self._cid,
                 'errors': self._service_errors or None,

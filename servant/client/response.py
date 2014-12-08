@@ -12,7 +12,10 @@ class Response(object):
         self.__num_actions = len(self.__object.actions)
 
         # for now.....one result
-        self.__action_result = self.__object.actions[0]
+        self.__action_result = None
+        if self.__num_actions > 0:
+            self.__action_result = self.__object.actions[0]
+
         self.__meta = self.__object.response
 
     def __getattr__(self, name):
@@ -39,7 +42,7 @@ class Response(object):
     @property
     def errors(self):
         """Return request-level errors"""
-        return self.__meta.errors
+        return ', '.join((e.error for e in self.__meta.errors))
 
     @property
     def action_errors(self):
