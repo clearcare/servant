@@ -11,7 +11,7 @@ from ...exceptions import ActionFieldError
 class Action(Model):
 
     @classmethod
-    def _do_run(klass, service, raw_data=None, deserialize_mapping=None, strict=True,
+    def execute_run(klass, service, raw_data=None, deserialize_mapping=None, strict=True,
             **rpc_kwargs):
         rpc_kwargs = klass.pre_run(**rpc_kwargs)
 

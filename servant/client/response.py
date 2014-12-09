@@ -42,6 +42,8 @@ class Response(object):
     @property
     def errors(self):
         """Return request-level errors"""
+        if not self.__meta.errors:
+            return ''
         return ', '.join((e.error for e in self.__meta.errors))
 
     @property

@@ -23,6 +23,7 @@ from schematics.types.compound import (
         ListType,
         ModelType,
 )
+from schematics.models import Model
 # this one has another dependency...defer
 #from schematics.types.temporal import (
 #        TimeStampType as TimeStampField,
@@ -34,6 +35,37 @@ class ServantFieldMixin(object):
     def __init__(self, *args, **kwargs):
         self.in_response = kwargs.pop('in_response', False)
         super(ServantFieldMixin, self).__init__(*args, **kwargs)
+
+
+class ServantCompoundFieldMixin(ServantFieldMixin):
+
+    def __init__(self, field, **kwargs):
+        if issubclass(field, ContainerField):
+            field = ModelType(field)
+        super(ServantCompoundFieldMixin, self).__init__(field, **kwargs)
+
+
+# start special container fields
+
+class ContainerField(ServantFieldMixin, Model):
+    """Special type of field which is itself a model under the hood.
+
+    This allows easy returning and validation of nested objects.
+
+    """
+    pass
+
+class ListField(ServantCompoundFieldMixin, ListType):
+    pass
+
+class DictField(ServantCompoundFieldMixin, DictType):
+    pass
+
+
+# start standard fields
+
+class ModelField(ServantFieldMixin, ModelType):
+    pass
 
 
 class BooleanField(ServantFieldMixin, BooleanType):
@@ -85,13 +117,4 @@ class URLField(ServantFieldMixin, URLType):
     pass
 
 class UUIDField(ServantFieldMixin, UUIDType):
-    pass
-
-class DictField(ServantFieldMixin, DictType):
-    pass
-
-class ListField(ServantFieldMixin, ListType):
-    pass
-
-class ModelField(ServantFieldMixin, ModelType):
     pass

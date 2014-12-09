@@ -53,36 +53,43 @@ def test_not_error():
     }
     resp = Response.fromDict(d)
     assert not resp.is_error()
-    assert resp.errors is None
+    assert resp.errors == ''
 
 def test_error_from_2nd_action():
     d = {
         'actions': [
             {'errors': None, 'field_errors': None},
-            {'errors': 'Client error', 'field_errors': None},
+            {'errors': ['Client error'], 'field_errors': None},
         ],
         'response': {'errors': None},
     }
     resp = Response.fromDict(d)
     assert resp.is_error()
-    assert resp.errors is None
+    assert resp.errors == ''
 
 def test_error_from_2nd_action_field():
     d = {
         'actions': [
             {'errors': None, 'field_errors': None},
-            {'errors': '', 'field_errors': {'input': 'error'}},
+            {
+                'errors': '',
+                'field_errors': {
+                    'some_field': [
+                        {'error': 'field specific error'},
+                    ],
+                },
+            },
         ],
         'response': {'errors': None},
     }
     resp = Response.fromDict(d)
     assert resp.is_error()
-    assert resp.errors is None
+    assert resp.errors == ''
 
 def test_error_from_response():
     d = {
         'actions': [ {'errors': None, 'field_errors': None} ],
-        'response': {'errors': 'There was an error'},
+        'response': {'errors': ['There was an error']},
     }
     resp = Response.fromDict(d)
     assert resp.is_error()
@@ -97,7 +104,7 @@ def test_response_to_native(response):
 
 def test_single_response(response):
     assert response
-    assert response.errors is None
+    assert response.errors == ''
     assert response.action_errors is None
     assert response.field_errors is None
 

@@ -90,11 +90,13 @@ class Service(object):
 
         self.finalize_response(response, action_results)
 
+        serialized_response = self.serialize_response(response)
+
         self.postprocess_response(response)
 
         # TODO - end_request signal
 
-        return self.serialize_response(response)
+        return serialized_response
 
     def run_actions(self, actions):
         """Loop through and execute a list of actions in a request.
@@ -141,7 +143,7 @@ class Service(object):
         results = None
 
         try:
-            results = action_class._do_run(service=self, **args)
+            results = action_class.execute_run(service=self, **args)
         except ActionError, err:
             self.handle_client_error(err)
         except ActionFieldError, err:
