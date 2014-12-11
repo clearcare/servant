@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from schematics.types import (
         StringType,
         BooleanType,
@@ -28,6 +30,8 @@ from schematics.models import Model
 #from schematics.types.temporal import (
 #        TimeStampType as TimeStampField,
 #)
+
+TWOPLACES = Decimal('0.01')
 
 
 class ServantFieldMixin(object):
@@ -118,3 +122,10 @@ class URLField(ServantFieldMixin, URLType):
 
 class UUIDField(ServantFieldMixin, UUIDType):
     pass
+
+class CurrencyField(DecimalField):
+    """Field which coerces value to two decimal places."""
+
+    def to_native(self, value, context=None):
+        value = super(CurrencyField, self).to_native(value, context=context)
+        return value.quantize(TWOPLACES)
