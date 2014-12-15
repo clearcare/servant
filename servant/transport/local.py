@@ -1,5 +1,7 @@
 import importlib
 
+from .base import BaseTransport
+
 
 class LocalTransport(BaseTransport):
 

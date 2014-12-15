@@ -11,21 +11,21 @@ from ...exceptions import ActionFieldError
 class Action(Model):
 
     @classmethod
-    def execute_run(klass, service, raw_data=None, deserialize_mapping=None, strict=True,
+    def get_instance(action_klass, raw_data=None, deserialize_mapping=None, strict=True,
             **rpc_kwargs):
-        rpc_kwargs = klass.pre_run(**rpc_kwargs)
+        rpc_kwargs = action_klass.pre_run(**rpc_kwargs)
 
         try:
-            self = klass(raw_data=rpc_kwargs,
-                    deserialize_mapping=deserialize_mapping, strict=strict)
+            return action_klass(raw_data=rpc_kwargs,
+                        deserialize_mapping=deserialize_mapping, strict=strict)
         except ConversionError, err:
             raise ActionFieldError(err)
 
+    def execute_run(self, service):
         # now, after instantiation, fields will have been transformed and
         # computed based on rpc_kwargs inputs, which are the fields passed to
         # the service as kwargs.
-
-        self.__errors = {}
+        self._errors = []
 
         # validate input arguments
         if self.is_valid():
@@ -49,6 +49,15 @@ class Action(Model):
     def get_action_kwargs(self):
         return {}
 
+    def add_error(self, msg, error_type, hint=''):
+        self._errors.append({
+            'error': msg,
+            'error_type': error_type,
+            'hint': hint})
+
+    def get_errors(self):
+        return self._errors
+
     def run(self, **kwargs):
         raise NotImplementedError('Clients must implement this method')
 
@@ -68,16 +77,16 @@ class Action(Model):
         return results
 
     def is_valid(self):
-        if self.__errors:
+        if self._errors:
             return False
 
         try:
             self.validate()
             return True
         except ValidationError, err:
-            self.__errors = err.messages
+            self._errors = err.messages
             return False
 
     def handle_errors(self, **kwargs):
-        return self.__errors
+        return self._errors
 

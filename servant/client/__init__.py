@@ -4,6 +4,7 @@ from ..utils import generate_cid
 from ..serializers import JsonSerializer
 from .response import Response
 
+
 class Client(object):
 
     def __init__(self, service_name, service_version=1, **kwargs):

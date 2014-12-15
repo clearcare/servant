@@ -1,6 +1,7 @@
 import time
 import requests
 
+from ..config import Config
 from ..exceptions import (
         ActionError,
         ActionFieldError,
@@ -27,11 +28,12 @@ class Service(object):
 
         self.__client = None
         self.__serializer = None
-        self._is_configured = None
 
+        self.config = Config()
+        self.is_configured = False
         self.configure()
 
-    def configure(self, *args, **kwargs):
+    def configure(self):
         """Configuration hook for services to utilize as needed."""
         pass
 
@@ -143,15 +145,18 @@ class Service(object):
         results = None
 
         try:
-            results = action_class.execute_run(service=self, **args)
+            action_instance = action_class.get_instance(**args)
+            results = action_instance.execute_run(service=self)
         except ActionError, err:
             self.handle_client_error(err)
         except ActionFieldError, err:
             field_errors = self.handle_field_error(err)
 
+        errors = action_instance.get_errors() or None
+
         return {
                 'action_name': action['action_name'],
-                'errors': None,
+                'errors': errors,
                 'results': results,
                 'field_errors': field_errors,
         }
