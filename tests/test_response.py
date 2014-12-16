@@ -1,6 +1,8 @@
 import pytest
 
+from servant.constants import *
 from servant.client import Response
+
 
 @pytest.fixture
 def response():
@@ -47,9 +49,8 @@ def double_response():
 
 
 ERROR = 'error'
-ERROR_TYPE = 'CLIENT_ERROR'
 
-def make_error(error=ERROR, hint='', error_type=ERROR_TYPE):
+def make_error(error=ERROR, hint='', error_type=CLIENT_ERROR):
     return {
             'error': error,
             'hint': hint,
@@ -105,6 +106,9 @@ def test_error_from_response():
     resp = Response(d)
     assert resp.is_error()
     assert resp.errors == [ERROR]
+    assert resp.full_errors
+    assert resp.full_errors[0].error == ERROR
+    assert resp.full_errors[0].error_type == CLIENT_ERROR
 
 def test_response_text(response):
     assert  isinstance(response, Response)

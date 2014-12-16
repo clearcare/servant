@@ -2,6 +2,7 @@ import time
 import requests
 
 from ..config import Config
+from ..constants import *
 from ..exceptions import (
         ActionError,
         ActionFieldError,
@@ -9,9 +10,6 @@ from ..exceptions import (
 )
 from ..serializers import JsonSerializer
 from ..utils import generate_cid
-
-SERVER_ERROR = 'SERVER_ERROR'
-CLIENT_ERROR = 'CLIENT_ERROR'
 
 
 class Service(object):
