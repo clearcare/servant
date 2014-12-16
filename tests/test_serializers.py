@@ -7,7 +7,7 @@ from servant.utils import generate_cid
 import servant.fields
 
 
-class SubAction(Action):
+class SubField(servant.fields.ContainerField):
     name = servant.fields.StringField()
     age = servant.fields.IntField()
     uuid = servant.fields.UUIDField()
@@ -16,9 +16,7 @@ class SubAction(Action):
 class ParentAction(Action):
     parent_name = servant.fields.StringField()
     uuid = servant.fields.UUIDField()
-    items = servant.fields.ListField(
-                servant.fields.ModelField(SubAction),
-    )
+    items = servant.fields.ListField(SubField)
 
 
 @pytest.fixture
@@ -31,7 +29,7 @@ def parent_action():
     action = ParentAction({
         'parent_name': 'parent_action',
         'uuid': generate_cid(),
-        'items': [SubAction({'name': 'bz', 'age': 41, 'uuid': generate_cid()})],
+        'items': [SubField({'name': 'bz', 'age': 41, 'uuid': generate_cid()})],
     })
     return action
 

@@ -4,7 +4,7 @@ from servant.client import Response
 
 @pytest.fixture
 def response():
-    return Response.fromDict({
+    return Response({
         'actions': [
             {'action_name': 'charge_credit_card',
                 'errors': None,
@@ -21,7 +21,7 @@ def response():
 
 @pytest.fixture
 def double_response():
-    return Response.fromDict({
+    return Response({
         'actions': [
             {
                 'action_name': 'charge_credit_card',
@@ -46,54 +46,65 @@ def double_response():
     })
 
 
+ERROR = 'error'
+ERROR_TYPE = 'CLIENT_ERROR'
+
+def make_error(error=ERROR, hint='', error_type=ERROR_TYPE):
+    return {
+            'error': error,
+            'hint': hint,
+            'error_type': error_type,
+    }
+
+
 def test_not_error():
     d = {
         'actions': [ {'errors': None, 'field_errors': None} ],
         'response': {'errors': None},
     }
-    resp = Response.fromDict(d)
+    resp = Response(d)
     assert not resp.is_error()
-    assert resp.errors == ''
+    assert resp.errors == None
 
-def test_error_from_2nd_action():
-    d = {
-        'actions': [
-            {'errors': None, 'field_errors': None},
-            {'errors': ['Client error'], 'field_errors': None},
-        ],
-        'response': {'errors': None},
-    }
-    resp = Response.fromDict(d)
-    assert resp.is_error()
-    assert resp.errors == ''
+#def test_error_from_2nd_action():
+#    d = {
+#        'actions': [
+#            {'errors': None, 'field_errors': None},
+#            {'errors': [make_error()], 'field_errors': None},
+#        ],
+#        'response': {'errors': None},
+#    }
+#    resp = Response(d)
+#    assert resp.is_error()
+#    assert resp.errors == ''
 
-def test_error_from_2nd_action_field():
-    d = {
-        'actions': [
-            {'errors': None, 'field_errors': None},
-            {
-                'errors': '',
-                'field_errors': {
-                    'some_field': [
-                        {'error': 'field specific error'},
-                    ],
-                },
-            },
-        ],
-        'response': {'errors': None},
-    }
-    resp = Response.fromDict(d)
-    assert resp.is_error()
-    assert resp.errors == ''
+#def test_error_from_2nd_action_field():
+#    d = {
+#        'actions': [
+#            {'errors': None, 'field_errors': None},
+#            {
+#                'errors': '',
+#                'field_errors': {
+#                    'some_field': [
+#                        {'error': 'field specific error'},
+#                    ],
+#                },
+#            },
+#        ],
+#        'response': {'errors': None},
+#    }
+#    resp = Response(d)
+#    assert resp.is_error()
+#    assert resp.errors == ''
 
 def test_error_from_response():
     d = {
         'actions': [ {'errors': None, 'field_errors': None} ],
-        'response': {'errors': ['There was an error']},
+        'response': {'errors': [make_error()]},
     }
-    resp = Response.fromDict(d)
+    resp = Response(d)
     assert resp.is_error()
-    assert resp.errors == 'There was an error'
+    assert resp.errors == [ERROR]
 
 def test_response_text(response):
     assert  isinstance(response, Response)
@@ -104,7 +115,7 @@ def test_response_to_native(response):
 
 def test_single_response(response):
     assert response
-    assert response.errors == ''
+    assert response.errors == None
     assert response.action_errors is None
     assert response.field_errors is None
 
