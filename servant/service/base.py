@@ -141,16 +141,16 @@ class Service(object):
         args = action.get('arguments', {})
         field_errors = None
         results = None
+        errors = None
 
         try:
             action_instance = action_class.get_instance(**args)
             results = action_instance.execute_run(service=self)
+            errors = action_instance.get_errors() or None
         except ActionError, err:
             self.handle_client_error(err)
         except ActionFieldError, err:
             field_errors = self.handle_field_error(err)
-
-        errors = action_instance.get_errors() or None
 
         return {
                 'action_name': action['action_name'],
