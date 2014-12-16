@@ -290,7 +290,7 @@ class Service(object):
                     ``ServantException``
 
         """
-        self.add_service_error(err, error_type=SERVER_ERROR)
+        self.add_service_error(exc, error_type=SERVER_ERROR)
 
     def handle_client_error(self, exc):
         """Add an error message to the list of request errors.

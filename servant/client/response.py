@@ -43,8 +43,14 @@ class Response(object):
     def errors(self):
         """Return request-level errors"""
         if not self.__meta.errors:
-            return ''
-        return ', '.join((e.error for e in self.__meta.errors))
+            return None
+        return [e.error for e in self.__meta.errors]
+
+    @property
+    def full_errors(self):
+        if not self.__meta.errors:
+            return None
+        return [e for e in self.__meta.errors]
 
     @property
     def action_errors(self):
