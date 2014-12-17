@@ -5,6 +5,7 @@ from schematics.exceptions import (
         ValidationError,
 )
 
+from ...constants import *
 from ...exceptions import ActionFieldError
 
 
@@ -54,6 +55,12 @@ class Action(Model):
             'error': msg,
             'error_type': error_type,
             'hint': hint})
+
+    def add_client_error(self, msg, hint=''):
+        self.add_error(msg, CLIENT_ERROR, hint)
+
+    def add_server_error(self, msg, hint=''):
+        self.add_error(msg, SERVER_ERROR, hint)
 
     def get_errors(self):
         return self._errors
