@@ -32,20 +32,17 @@ class Config(MutableMapping):
                                'loaded.  Set this variable and make it '
                                'point to a configuration file' %
                                variable_name)
-        return self.from_pyfile(var)
+        return self.from_module(var)
 
-    def from_pyfile(self, filename):
-        """Updates the values in the config from a Python file.  This function
-        behaves as if the file was imported as module with the
-        :meth:`from_object` function.
+    def from_module(self, module_name):
+        """Updates the values in the config from a Python module.
+        ``module_name`` must be on the system path and importable.
 
-        :param filename: the filename of the config.  This can either be an
-                         absolute filename or a filename relative to the
-                         root path.
+        :param module_name: the module_name of the config.
 
         """
         try:
-            module = importlib.import_module(filename)
+            module = importlib.import_module(module_name)
         except ImportError as e:
             e.strerror = 'Unable to load configuration file (%s)' % e.strerror
             raise
@@ -71,7 +68,7 @@ class Config(MutableMapping):
 
         You should not use this function to load the actual configuration but
         rather configuration defaults.  The actual config should be loaded
-        with :meth:`from_pyfile` and ideally from a location not within the
+        with :meth:`from_module` and ideally from a location not within the
         package because the package might be installed system wide.
 
         :param obj: an import name or object
