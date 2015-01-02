@@ -40,6 +40,11 @@ class ServantFieldMixin(object):
         self.in_response = kwargs.pop('in_response', False)
         super(ServantFieldMixin, self).__init__(*args, **kwargs)
 
+    def to_native(self, value, context=None):
+        if value is None:
+            return None
+        return super(ServantFieldMixin, self).to_native(value, context)
+
 
 class ServantCompoundFieldMixin(ServantFieldMixin):
 
@@ -125,6 +130,10 @@ class UUIDField(ServantFieldMixin, UUIDType):
 
 class CurrencyField(DecimalField):
     """Field which coerces value to two decimal places."""
+
+    MESSAGES = {
+        'number_coerce': 'Value failed to convert to a valid currency',
+    }
 
     def to_native(self, value, context=None):
         value = super(CurrencyField, self).to_native(value, context=context)
