@@ -14,7 +14,7 @@ from ..utils import generate_cid
 
 class Service(object):
 
-    def __init__(self):
+    def __init__(self, do_configure=True):
         if not hasattr(self, 'name'):
             raise Exception('Services must contain a name attribute')
 
@@ -29,7 +29,8 @@ class Service(object):
 
         self.config = Config()
         self.is_configured = False
-        self.configure()
+        if do_configure:
+            self.configure()
 
     def configure(self):
         """Configuration hook for services to utilize as needed."""
