@@ -1,4 +1,7 @@
-from schematics.exceptions import BaseError
+from schematics.exceptions import (
+        BaseError,
+        ValidationError,
+)
 
 
 class ServantException(BaseError):
