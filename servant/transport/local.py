@@ -13,6 +13,18 @@ class LocalTransport(BaseTransport):
         return self.__class__.__name__
 
     def configure(self, service_name='', service_version='', service_meta=None):
+        instance = self._import_service_and_instantiate_service(service_name, service_version)
+        self.service = instance
+
+    @property
+    def service(self):
+        raise AttributeError("Cannot access service property directly")
+
+    @service.setter
+    def service(self, service_instance):
+        self.__service = service_instance
+
+    def _import_service_and_instantiate_service(self, service_name, service_version):
         if not service_name and service_version:
             raise Exception(
                 'service_name and service_version are required '
@@ -35,15 +47,13 @@ class LocalTransport(BaseTransport):
                     instance.__class__.__bases__}:
                 continue
 
-            self.__service = instance
-            break
+            return instance
 
-        if not self.__service:
-            raise Exception(
-                    'Could not find appropriate Service class. Services '
-                    'must subclass servant.Service and define an action_map, '
-                    'name and version.'
-            )
+        raise Exception(
+                'Could not find appropriate Service class. Services '
+                'must subclass servant.Service and define an action_map, '
+                'name and version.'
+        )
 
     def _looks_like_service_class(self, obj, service_name, service_version):
         return (

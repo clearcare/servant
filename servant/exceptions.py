@@ -15,5 +15,6 @@ class ActionError(ServantException):
 
 class ActionFieldError(ServantException):
     """Error for a specific action field"""
+    # Used internally...user's should not raise this directly
     pass
 

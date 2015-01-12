@@ -27,6 +27,15 @@ class Client(object):
             self.__transport.configure(**kwargs)
             self.__transport.connect()
 
+    def configure_from_service_instance(self, service_instance):
+        """Special hook to create a transport directly from an instantiated
+        service.  Used mostly for testing.
+
+        """
+        if self.__transport is None:
+            self.__transport = self.get_transport('local')
+            self.__transport.service = service_instance
+
     def send(self, action_name):
         # by default, configure for local calls
         if not self.is_configured():

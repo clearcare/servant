@@ -10,10 +10,16 @@ from ...exceptions import ActionFieldError
 
 
 class Action(Model):
+    """A single action/endpoint for a service.
 
+    An Action is invoked in an rpc-style mechanism, where the service will instantiate an Action
+    instance and execute it via the ``execute_run`` method.
+
+    """
     @classmethod
     def get_instance(action_klass, raw_data=None, deserialize_mapping=None, strict=True,
             **rpc_kwargs):
+        """Entry point into the Action, invoked by the service."""
         rpc_kwargs = action_klass.pre_run(**rpc_kwargs)
 
         try:
@@ -22,10 +28,24 @@ class Action(Model):
         except ConversionError, err:
             raise ActionFieldError(err)
 
+    @classmethod
+    def pre_run(klass, **kwargs):
+        """Hook before ``run`` is called.
+
+        Should return the kwargs passed to Action contructor.  Note this is just for the
+        constructor of the ``Action``, not for the actual ``run method.
+        """
+        return kwargs
+
     def execute_run(self, service):
-        # now, after instantiation, fields will have been transformed and
-        # computed based on rpc_kwargs inputs, which are the fields passed to
-        # the service as kwargs.
+        """Actually execute the action by doing any setup/bootstrap and calling ``run``.
+
+        After instantiation, fields will have been transformed and computed based on rpc_kwargs
+        inputs.  The rpc_kwargs/action_args are fields passed to the service as kwargs::
+
+            results = client.do_some_action(name='bz', age=29)
+
+        """
         self._errors = []
 
         # validate input arguments
@@ -34,7 +54,11 @@ class Action(Model):
             self.run(**action_kwargs)
 
         # revalidate since the run method could have attached some new
-        # attributes
+        # attributes.
+        #
+        # TODO - There may be a better way to handle this since the service itself shouldn't be
+        # creating any internal validation errors/issues.
+        #
         try:
             self.validate()
             final_results = self.finalize_results()
@@ -43,23 +67,23 @@ class Action(Model):
 
         return final_results
 
-    @classmethod
-    def pre_run(klass, **kwargs):
-        return kwargs
-
     def get_action_kwargs(self):
+        """Another hook which can control kwargs to the run method."""
         return {}
 
     def add_error(self, msg, error_type, hint=''):
+        """Add an action error"""
         self._errors.append({
             'error': msg,
             'error_type': error_type,
             'hint': hint})
 
     def add_client_error(self, msg, hint=''):
+        """Add a specific type of error indicating that the client did something wrong."""
         self.add_error(msg, CLIENT_ERROR, hint)
 
     def add_server_error(self, msg, hint=''):
+        """Add a specific type of error indicating that the server had some sort of issue."""
         self.add_error(msg, SERVER_ERROR, hint)
 
     def get_errors(self):
@@ -93,7 +117,3 @@ class Action(Model):
         except ValidationError, err:
             self._errors = err.messages
             return False
-
-    def handle_errors(self, **kwargs):
-        return self._errors
-

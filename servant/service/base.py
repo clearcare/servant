@@ -141,22 +141,38 @@ class Service(object):
         """
         args = action.get('arguments', {})
         field_errors = None
-        results = None
-        errors = None
+        action_results = None
+        action_errors = None
 
         try:
             action_instance = action_class.get_instance(**args)
-            results = action_instance.execute_run(service=self)
-            errors = action_instance.get_errors() or None
+            action_results = action_instance.execute_run(service=self)
+            action_errors = action_instance.get_errors() or None
+            # copy the action errors into the main errors
+            if action_errors:
+                for err in action_errors:
+                    self.add_service_error(
+                            err['error'],
+                            error_type=err['error_type'],
+                            hint=err['hint'],
+                    )
         except ActionError, err:
-            self.handle_client_error(err)
+            error = self.handle_client_error(err)
+            # set the action errors to be this one error
+            action_errors = [error]
         except ActionFieldError, err:
             field_errors = self.handle_field_error(err)
+            action_errors = [{
+                'error': 'field_errors',
+                'error_type': CLIENT_ERROR,
+                'hint': 'One or more fields did not validate. ' \
+                        'See field_errors attribute for details',
+            }]
 
         return {
                 'action_name': action['action_name'],
-                'errors': errors,
-                'results': results,
+                'errors': action_errors,
+                'results': action_results,
                 'field_errors': field_errors,
         }
 
@@ -289,7 +305,7 @@ class Service(object):
                     ``ServantException``
 
         """
-        self.add_service_error(exc, error_type=SERVER_ERROR)
+        return self.add_service_error(exc, error_type=SERVER_ERROR)
 
     def handle_client_error(self, exc):
         """Add an error message to the list of request errors.
@@ -301,7 +317,7 @@ class Service(object):
         :param exc: An ``Exception`` object which should have subclassed
                     ``ServantException``
         """
-        self.add_service_error(exc, error_type=CLIENT_ERROR)
+        return self.add_service_error(exc, error_type=CLIENT_ERROR)
 
     def handle_unexpected_error(self, exc):
         """Handle an unexpected error.
@@ -310,7 +326,7 @@ class Service(object):
                     ``ServantException``
 
         """
-        self.add_service_error(exc, error_type=SERVER_ERROR,
+        return self.add_service_error(exc, error_type=SERVER_ERROR,
                 error_prelude='Unexpected service error')
 
     def handle_field_error(self, exc):
@@ -351,11 +367,13 @@ class Service(object):
         if error_prelude:
             err = u'%s: %s' % (error_prelude, err)
 
-        self._service_errors.append({
+        error = {
             'error': unicode(err),
             'hint': unicode(hint),
             'error_type': error_type,
-        })
+        }
+        self._service_errors.append(error)
+        return error
 
     def get_serializer(self):
         if not self.__serializer:

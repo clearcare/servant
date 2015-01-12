@@ -55,12 +55,14 @@ class Response(object):
     @property
     def action_errors(self):
         """Return action-wide errors"""
-        return self.__action_result.errors
+        if self.__action_result:
+            return self.__action_result.errors
 
     @property
     def field_errors(self):
         """Return specific field errors"""
-        return self.__action_result.field_errors
+        if self.__action_result:
+            return self.__action_result.field_errors
 
     def to_native(self):
         """Return the raw deserialized response as dict"""
