@@ -7,6 +7,7 @@ from schematics.exceptions import (
 
 from ...constants import *
 from ...exceptions import ActionFieldError
+from ...logger import create_logger
 
 
 class Action(Model):
@@ -36,6 +37,15 @@ class Action(Model):
         constructor of the ``Action``, not for the actual ``run method.
         """
         return kwargs
+
+    @property
+    def logger(self):
+        self._logger = getattr(self, '_logger', None)
+        if self._logger and self._logger.name == self.logger_name:
+            return self._logger
+
+        self._logger = create_logger(self.__class__.__name__)
+        return self._logger
 
     def execute_run(self, service):
         """Actually execute the action by doing any setup/bootstrap and calling ``run``.
