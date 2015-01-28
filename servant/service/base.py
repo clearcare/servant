@@ -10,6 +10,7 @@ from ..exceptions import (
 )
 from ..serializers import JsonSerializer
 from ..utils import generate_cid
+from ..logger import create_logger
 
 
 class Service(object):
@@ -31,6 +32,29 @@ class Service(object):
         self.is_configured = False
         if do_configure:
             self.configure()
+
+    @property
+    def logger(self):
+        return self.get_logger()
+
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
+
+    def get_logger(self):
+        """Return a Logger instance.
+
+        Services are encouraged and expected to override this to return a Logger object which makes
+        sense for a given service.  The default logger doesn't do much of anything other than
+        calling ``logging.basicConfig``.
+
+        """
+        self._logger = getattr(self, '_logger', None)
+        if self._logger:
+            return self._logger
+
+        self._logger = create_logger(self.__class__.__name__)
+        return self._logger
 
     def configure(self):
         """Configuration hook for services to utilize as needed."""
@@ -146,6 +170,7 @@ class Service(object):
 
         try:
             action_instance = action_class.get_instance(**args)
+            action_instance.pre_run(service=self)
             action_results = action_instance.execute_run(service=self)
             action_errors = action_instance.get_errors() or None
             # copy the action errors into the main errors

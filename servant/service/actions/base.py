@@ -20,7 +20,7 @@ class Action(Model):
     def get_instance(action_klass, raw_data=None, deserialize_mapping=None, strict=True,
             **rpc_kwargs):
         """Entry point into the Action, invoked by the service."""
-        rpc_kwargs = action_klass.pre_run(**rpc_kwargs)
+        rpc_kwargs = action_klass.pre_init(**rpc_kwargs)
 
         try:
             return action_klass(raw_data=rpc_kwargs,
@@ -29,13 +29,43 @@ class Action(Model):
             raise ActionFieldError(err)
 
     @classmethod
-    def pre_run(klass, **kwargs):
-        """Hook before ``run`` is called.
+    def pre_init(klass, **kwargs):
+        """Hook before the action is instantiated.
 
         Should return the kwargs passed to Action contructor.  Note this is just for the
         constructor of the ``Action``, not for the actual ``run method.
         """
         return kwargs
+
+    def __getattr__(self, name):
+        if name.startswith('log_'):
+            log_attr = name.lstrip('log_')
+            return self._do_log(log_attr)
+        raise AttributeError("'%s' object has no attribute '%s'" % (
+                self.__class__.__name__, name))
+
+    @property
+    def logger(self):
+        return self.get_logger()
+
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
+
+    def get_logger(self):
+        return getattr(self, '_logger', None)
+
+    def _do_log(self, log_attr):
+        log_function = getattr(self.logger, log_attr)
+
+        def wrapper(*args, **kwargs):
+            log_function(*args, **kwargs)
+
+        return wrapper
+
+    def pre_run(self, service):
+        """Hook before ``execute_run`` is called."""
+        self.logger = service.logger
 
     def execute_run(self, service):
         """Actually execute the action by doing any setup/bootstrap and calling ``run``.
@@ -47,6 +77,8 @@ class Action(Model):
 
         """
         self._errors = []
+
+        self._service = service
 
         # validate input arguments
         if self.is_valid():
