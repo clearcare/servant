@@ -24,6 +24,12 @@ class Config(MutableMapping):
     def __len__(self):
         return len(self.__data)
 
+    def __getattr__(self, name):
+        try:
+            return self.__data[name]
+        except KeyError:
+            raise AttributeError("%s object has no attribute '%s'" % (self.__class__.__name__, name))
+
     def from_envvar(self, variable_name):
         var = os.environ.get(variable_name)
         if not var:
