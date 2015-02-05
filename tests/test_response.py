@@ -130,6 +130,41 @@ def test_single_response(response):
     assert response.approved_amount == 94.49
     assert response.transaction_id == 2004015948
     assert response.transaction_status == 'Approved'
+    assert response.toDict()
+
+
+def test_to_dict_on_no_response():
+    d = {
+        'actions': [
+            {
+                'action_name': 'charge_credit_card',
+                'errors': [
+                    {
+                        'error': 'field_errors',
+                        'error_type': 'CLIENT_ERROR',
+                        'hint': 'See field_errors attribute for details',
+                    }
+                ],
+                'field_errors': {
+                       'agency_id': [
+                           {'error': 'This field is required.', 'hint': 'This field is required.'}
+                        ],
+                },
+                'results': None
+            }
+        ],
+        'response': {
+            'correlation_id': '1208fbe7-fd20-4911-a6cf-0cd053bd8044',
+            'errors': None,
+            'name': 'foo',
+            'response_time': '0.00039',
+            'version': 1,
+        },
+    }
+    resp = Response(d)
+    assert resp.is_error()
+    assert resp.toDict() is None
+    assert resp.to_native() == d
 
 
 #def test_double_response(double_response):

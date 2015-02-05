@@ -68,6 +68,11 @@ class Response(object):
         """Return the raw deserialized response as dict"""
         return self.__data
 
+    def toDict(self):
+        if self.__action_result.results:
+            return self.__action_result.toDict()
+        return None
+
     def is_error(self):
         """Boolean whether there were any errors"""
         if self.__object.response.errors:
