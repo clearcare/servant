@@ -167,6 +167,7 @@ class Service(object):
         field_errors = None
         action_results = None
         action_errors = None
+        action_instance = None
 
         try:
             action_instance = action_class.get_instance(**args)
@@ -193,6 +194,9 @@ class Service(object):
                 'hint': 'One or more fields did not validate. ' \
                         'See field_errors attribute for details',
             }]
+
+        if action_instance:
+            action_instance.post_run()
 
         return {
                 'action_name': action['action_name'],

@@ -64,8 +64,12 @@ class Action(Model):
         return wrapper
 
     def pre_run(self, service):
-        """Hook before ``execute_run`` is called."""
+        """Hook *before* ``execute_run`` is called."""
         self.logger = service.logger
+
+    def post_run(self):
+        """Hook *after* ``execute_run`` is called."""
+        pass
 
     def execute_run(self, service):
         """Actually execute the action by doing any setup/bootstrap and calling ``run``.
