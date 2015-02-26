@@ -65,6 +65,7 @@ class Action(Model):
 
     def pre_run(self, service):
         """Hook *before* ``execute_run`` is called."""
+        self._service = service
         self.logger = service.logger
 
     def post_run(self):
@@ -81,8 +82,6 @@ class Action(Model):
 
         """
         self._errors = []
-
-        self._service = service
 
         # validate input arguments
         if self.is_valid():
