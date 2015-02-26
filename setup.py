@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='servant',
     packages=find_packages(exclude=['test', 'examples', 'examples.*']),
-    version = '0.0.4',
+    version = '0.0.5',
     description = 'A library for building services',
     author='Brian Zambrano',
     author_email='brianz@gmail.com',
@@ -20,9 +20,9 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
         'Operating System :: OS Independent',
-        'Development Status :: 1 - Planning',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Topic :: System :: Distributed Computing',
