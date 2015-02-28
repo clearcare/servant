@@ -118,7 +118,10 @@ class InternalClient(object):
 
         def make_call(**kwargs):
             action = {'action_name': name, 'arguments': kwargs}
-            return self.__service.run_single_action(action_class, action)
+            action_results = self.__service.run_single_action(action_class, action)
+            service_response = {'actions': [action_results], 'response': None}
+            response = Response(service_response)
+            return response
 
         return make_call
 
