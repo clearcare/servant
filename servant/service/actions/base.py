@@ -5,6 +5,7 @@ from schematics.exceptions import (
         ValidationError,
 )
 
+from ...client import InternalClient
 from ...constants import *
 from ...exceptions import ActionFieldError
 
@@ -71,6 +72,9 @@ class Action(Model):
     def post_run(self):
         """Hook *after* ``execute_run`` is called."""
         pass
+
+    def get_internal_client(self):
+        return InternalClient(self._service)
 
     def execute_run(self, service):
         """Actually execute the action by doing any setup/bootstrap and calling ``run``.

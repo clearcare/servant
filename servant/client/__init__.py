@@ -101,3 +101,24 @@ class Client(object):
     def describe(self):
         pass
 
+
+
+class InternalClient(object):
+
+    def __init__(self, service):
+        self.__service = service
+
+    def __getattr__(self, name):
+        return self.send(name)
+
+    def send(self, name):
+        action_class = self.__service._get_action_class_by_name(name)
+        if not action_class:
+            return
+
+        def make_call(**kwargs):
+            action = {'action_name': name, 'arguments': kwargs}
+            return self.__service.run_single_action(action_class, action)
+
+        return make_call
+

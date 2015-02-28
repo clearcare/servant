@@ -287,6 +287,14 @@ class Service(object):
 
         return actions
 
+    def _get_action_class_by_name(self, action_name):
+        action_class = self.__class__.action_map.get(action_name)
+        if action_class:
+            return action_class
+
+        self.add_service_error('No action named "%s" found' % (action_name, ),
+                CLIENT_ERROR)
+
     def _get_action_class(self, action, action_num):
         action_name = action.get('action_name')
         if not action_name:
@@ -294,13 +302,7 @@ class Service(object):
                 action, action_num), CLIENT_ERROR)
             return
 
-        action_class = self.__class__.action_map.get(action_name)
-        if not action_class:
-            self.add_service_error('No action named "%s" found' % (action_name, ),
-                    CLIENT_ERROR)
-            return
-
-        return action_class
+        return self._get_action_class_by_name(action_name)
 
     def _get_actions_from_request(self, request):
         # request is the raw deserialized payload. It must be validated
