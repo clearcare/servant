@@ -10,7 +10,7 @@ setup(
     url='https://github.com/brianz/servant',
     install_requires=[
         'requests>=2.4.3',
-        'schematics>=1.0-0',
+        'schematics==1.0.3',
         'six>=1.8.0',
         'xmltodict>=0.9.0',
     ],

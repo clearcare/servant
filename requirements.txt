@@ -1,3 +1,3 @@
 requests
-schematics
+schematics==1.0.3
 bunch
