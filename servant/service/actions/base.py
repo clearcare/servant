@@ -73,8 +73,8 @@ class Action(Model):
         """Hook *after* ``execute_run`` is called."""
         pass
 
-    def get_internal_client(self):
-        return InternalClient(self._service)
+    def get_internal_client(self, do_begin_response=False):
+        return InternalClient(self._service, do_begin_response=do_begin_response)
 
     def execute_run(self, service):
         """Actually execute the action by doing any setup/bootstrap and calling ``run``.
