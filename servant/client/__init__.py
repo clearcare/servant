@@ -105,8 +105,15 @@ class Client(object):
 
 class InternalClient(object):
 
-    def __init__(self, service):
+    def __init__(self, service, do_begin_response=False):
+        """Parameters:
+
+        * do_begin_response_before_action: causes the service errors to be reset.
+                This can be useful if your actions are independent and you
+                only care about the latest action's errors.
+        """
         self.__service = service
+        self.do_begin_response = do_begin_response
 
     def __getattr__(self, name):
         return self.send(name)
@@ -118,8 +125,11 @@ class InternalClient(object):
 
         def make_call(**kwargs):
             action = {'action_name': name, 'arguments': kwargs}
+            if self.do_begin_response:
+                self.__service.begin_response()  # reset errors
             action_results = self.__service.run_single_action(action_class, action)
-            service_response = {'actions': [action_results], 'response': None}
+            service_response = {}
+            self.__service.finalize_response(service_response, [action_results])
             response = Response(service_response)
             return response
 
