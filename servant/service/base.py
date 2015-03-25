@@ -1,6 +1,7 @@
 import time
 import requests
 
+from .response import Response
 from ..config import Config
 from ..constants import *
 from ..exceptions import (
@@ -82,7 +83,7 @@ class Service(object):
 
         This method is called when running any of the application backends (eg,
         wsgi/http, local). It's important to note that any exception will be
-        digest here so that the backend can reply with a suitable response to
+        digested here so that the backend can reply with a suitable response to
         the client.
 
         :param payload: A serialized request object from a client, typically a
@@ -175,6 +176,10 @@ class Service(object):
             action_results = action_instance.execute_run(service=self)
             action_errors = action_instance.get_errors() or None
             # copy the action errors into the main errors
+            print '-----------------------'
+            print self, id(self)
+            print id(self._service_errors)
+            print
             if action_errors:
                 for err in action_errors:
                     self.add_service_error(
@@ -222,6 +227,7 @@ class Service(object):
         return [response]
 
     def begin_response(self):
+        self._response = Response()
         self._service_errors = []
         return {}
 

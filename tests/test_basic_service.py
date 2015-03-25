@@ -8,6 +8,7 @@ def test_test_client(test_client):
     assert response.age >= 0
     assert response.age <= 100
 
+
 def test_test_client_values(test_client):
     response = test_client.say_name(name='bz', age=41)
     assert not response.is_error()
