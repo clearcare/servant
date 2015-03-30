@@ -108,9 +108,17 @@ class InternalClient(object):
     def __init__(self, service, do_begin_response=False):
         """Parameters:
 
-        * do_begin_response_before_action: causes the service errors to be reset.
+        * do_begin_response: causes the service errors to be reset.
                 This can be useful if your actions are independent and you
                 only care about the latest action's errors.
+        
+        Note: `do_begin_response` only solves the problem of resetting
+        the response errors between requests.
+        The InternalClient needs more thought for complicated used cases
+        where we pipeline multiple commands from the original client.
+        If you find yourself reaching into the internals of this object
+        (or the service or response objects), please consider improving
+        the InternalClient interface.
         """
         self.__service = service
         self.do_begin_response = do_begin_response
