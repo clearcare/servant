@@ -5,7 +5,7 @@ import servant.fields
 
 class PaginationField(servant.fields.ContainerField):
     page = servant.fields.IntField(min_value=1)
-    page_size = servant.fields.IntField(min_value=1, max_value=500)
+    page_size = servant.fields.IntField(min_value=1)
     num_pages = servant.fields.IntField()
     total_count = servant.fields.IntField()
 
