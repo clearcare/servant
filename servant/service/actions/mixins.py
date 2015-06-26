@@ -13,7 +13,7 @@ class PaginationField(servant.fields.ContainerField):
 class PaginatedActionMixin(Action):
     # Input controls...page is 1-based
     page = servant.fields.IntField(default=1, min_value=1)
-    page_size = servant.fields.IntField(default=25, min_value=1, max_value=500)
+    page_size = servant.fields.IntField(default=25, min_value=1)
 
     # Output
     paging = servant.fields.ModelField(PaginationField, in_response=True)
