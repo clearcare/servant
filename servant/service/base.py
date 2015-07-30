@@ -216,7 +216,13 @@ class Service(object):
         ]
         start_response(status, headers)
 
-        content_length = int(environ.get('CONTENT_LENGTH'), -1)
+        content_length = environ.get('CONTENT_LENGTH', None) or -1
+        print content_length
+        if not content_length:
+            content_length = -1
+        else:
+            content_length = int(content_length)
+
         payload = environ['wsgi.input'].read(content_length)
         response = self.handle_request(payload)
         return [response]
