@@ -91,7 +91,7 @@ class Service(object):
         :rtype:
 
         """
-        self.logger.debug('handle_request => payload: %s', payload)
+        print('handle_request => payload: %s', payload)
 
         self.__start_time = time.time()
 
@@ -108,13 +108,13 @@ class Service(object):
         # this could be wrapped in process_response()
         try:
             deserialized_request_payload = self.deserialize_request(payload)
-            self.logger.debug('deserialized_request_payload => %s', deserialized_request_payload)
+            print('deserialized_request_payload => %s', deserialized_request_payload)
 
             actions = self.prepare_request(deserialized_request_payload)
-            self.logger.debug('actions => %s', actions)
+            print('actions => %s', actions)
 
             action_results = self.run_actions(actions)
-            self.logger.debug('action_results => %s', action_results)
+            print('action_results => %s', action_results)
         except ServantException, err:
             self.handle_service_error(err)
             self.logger.exception(err)
@@ -125,7 +125,7 @@ class Service(object):
         self.finalize_response(response, action_results)
 
         serialized_response = self.serialize_response(response)
-        self.logger.debug('serialized_response => %s', serialized_response)
+        print('serialized_response => %s', serialized_response)
 
         self.postprocess_response(response)
 
@@ -234,8 +234,8 @@ class Service(object):
 
         payload = environ['wsgi.input'].read(content_length)
         response = self.handle_request(payload)
-        self.logger.debug('proccessed request, returning response')
-        self.logger.debug(response)
+        print('proccessed request, returning response')
+        print(response)
         return [response]
 
     def begin_response(self):
