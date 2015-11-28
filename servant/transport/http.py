@@ -11,8 +11,8 @@ class HttpTransport(BaseTransport):
     def __repr__(self):
         return 'HttpTransport at %s' % (self.__url, )
 
-    def configure(self, host='localhost', port=8000, scheme='http', namespace=''):
-        self.__url = '%s://%s:%s%s' % (scheme, host, port, namespace)
+    def configure(self, host='localhost', port=8000, scheme='http'):
+        self.__url = '%s://%s:%s' % (scheme, host, port)
 
     def is_connected(self):
         return True
