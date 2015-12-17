@@ -10,6 +10,10 @@ class Client(object):
     def __init__(self, service_name, service_version=1, **kwargs):
         self.service_name = service_name
         self.service_version = service_version
+
+        if 'version' in kwargs:
+            self.service_version = kwargs['version']
+
         self.service_meta = kwargs
 
         self.__transport = None
@@ -111,7 +115,7 @@ class InternalClient(object):
         * do_begin_response: causes the service errors to be reset.
                 This can be useful if your actions are independent and you
                 only care about the latest action's errors.
-        
+
         Note: `do_begin_response` only solves the problem of resetting
         the response errors between requests.
         The InternalClient needs more thought for complicated used cases

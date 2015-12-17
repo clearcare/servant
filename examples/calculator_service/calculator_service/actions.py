@@ -21,9 +21,18 @@ class AddAction(Action):
 
 
 class SubtractAction(AddAction):
-
     def run(self, **kwargs):
         self.result = self.number1 - self.number2
+
+
+class BackwardSubtractAction(SubtractAction):
+    def run(self, **kwargs):
+        self.result = self.number2 - self.number1
+
+
+class MultiplyAction(AddAction):
+    def run(self, **kwargs):
+        self.result = self.number1 * self.number2
 
 
 class DivideAction(Action):

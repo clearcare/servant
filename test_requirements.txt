@@ -1,4 +1,6 @@
 -r requirements.txt
 pytest
 pytest-coverage
+tox
 -e .
+-e examples/calculator_service/
