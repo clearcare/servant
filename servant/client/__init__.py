@@ -1,3 +1,5 @@
+import warnings
+
 from ..transport import get_client_transport_class_by_name
 from ..utils import generate_cid
 
@@ -7,12 +9,16 @@ from .response import Response
 
 class Client(object):
 
-    def __init__(self, service_name, service_version=1, **kwargs):
+    def __init__(self, service_name, version=1, **kwargs):
         self.service_name = service_name
-        self.service_version = service_version
+        self.service_version = version
 
-        if 'version' in kwargs:
-            self.service_version = kwargs['version']
+        # safety check since the kwarg was changed from service_version to version. I believe
+        # all clients were already using 'version'
+        if 'service_version' in kwargs:
+            msg = "The use of service_version is being deprecated. Plese use the version kwarg."
+            warnings.warn(msg, DeprecationWarning)
+            self.service_version = kwargs['service_version']
 
         self.service_meta = kwargs
 
