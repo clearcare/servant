@@ -13,7 +13,34 @@ from ..utils import generate_cid
 from ..logger import create_logger
 
 
+class ServiceMeta(type):
+
+    def __init__(cls, name, bases, attrs):
+        action_map = ServiceMeta.__get_or_create_action_map(cls, attrs)
+
+        # Merge the action maps together for any base classes to support versioning. Ensure we walk
+        # through the list of bases in reverse so we don't override a new action with an older one.
+        for base in reversed(bases):
+            if not base.__class__ == ServiceMeta:
+                continue
+
+            for key, val in getattr(base, 'action_map').iteritems():
+                if key not in action_map:
+                    action_map[key] = val
+
+    @staticmethod
+    def __get_or_create_action_map(cls, attrs):
+        # return the action map for the Service instance.  If one doesn't exist, add an empty one
+        action_map = attrs.get('action_map', None)
+        if not action_map:
+            cls.action_map = {}
+
+        return cls.action_map
+
+
 class Service(object):
+
+    __metaclass__ = ServiceMeta
 
     def __init__(self, do_configure=True):
         if not hasattr(self, 'name'):
