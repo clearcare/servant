@@ -37,13 +37,12 @@ class ServiceWithMultipleInheritence(ServiceV3, ServiceV4):
     version = 555
 
 
-# The inheritence tests aren't the desired behavior.  These will change once versioning support is
-# built in.  Add this test now to ensure no backward compatibility issues.
 
 def test_version2():
     v2 = ServiceV2()
     assert v2.action_map == {
             'foo': 'foo2',
+            'bar': 'bar1',
     }
 
 def test_version3():
@@ -61,7 +60,8 @@ def test_multiple_inheritence():
     assert s.action_map == {
             'foo': 'foo3',
             'bar': 'bar3',
-            'baz': 'baz3',
+            'baz': 'baz4',
+            'some_action': 555,
     }
 
 def test_missing_name():
@@ -87,5 +87,5 @@ def test_missing_action_map():
         name = 'service'
         version = 1
 
-    with pytest.raises(Exception):
-        NoActionMap()
+    s = NoActionMap()
+    assert s.action_map == {}

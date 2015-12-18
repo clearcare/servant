@@ -3,7 +3,7 @@ import servant.client
 client = servant.client.Client('calculator_service', version=1)
 # Uncomment this line and change the connection settings in order to hit an HTTP version of the
 # service
-client.configure('http', host='192.168.88.100', port=8888)
+# client.configure('http', host='192.168.88.100', port=8888)
 
 def _handle_error(response):
     print response.errors, response.field_errors
@@ -40,3 +40,11 @@ def do_divide():
 
 
 do_divide()
+
+
+client = servant.client.Client('calculator_service', version=2)
+response = client.multiply(number1=12, number2=12)
+if response.is_error():
+    print response.errors
+else:
+    print response.result

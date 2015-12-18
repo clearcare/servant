@@ -1,6 +1,7 @@
 import importlib
 
 from .base import BaseTransport
+from ..service import Service
 
 
 class LocalTransport(BaseTransport):
@@ -41,10 +42,8 @@ class LocalTransport(BaseTransport):
                 continue
 
             instance = obj()
-            # uber-safe final check to make sure we have the correct service
-            # class
-            if not 'Service' in {b.__name__ for b in
-                    instance.__class__.__bases__}:
+            # uber-safe final check to make sure we have the correct service class
+            if not isinstance(instance, Service):
                 continue
 
             return instance

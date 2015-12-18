@@ -13,3 +13,11 @@ class CalculatorService(Service):
             'subtract': actions.SubtractAction,
             'divide': actions.DivideAction,
     }
+
+
+class CalculatorServiceV2(CalculatorService):
+    version = 2
+    action_map = {
+            'multiply': actions.MultiplyAction,
+            'subtract': actions.BackwardSubtractAction,
+    }
