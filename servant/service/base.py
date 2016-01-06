@@ -13,6 +13,30 @@ from ..utils import generate_cid
 from ..logger import create_logger
 
 
+import newrelic.agent
+import sys
+from pprint import pprint as pp
+
+# def handle_unexpected_error(self, exc):
+
+def wrap_unexpected_error():
+
+    def _nr_handle_unexpected_error(func, *args, **kwargs):
+        def wrapped(self, exc):
+            pp(sys.exc_info())
+            newrelic.agent.record_exception(*sys.exc_info())
+            return func(self, exc)
+
+        return wrapped
+
+    Service.handle_unexpected_error = _nr_handle_unexpected_error(Service.handle_unexpected_error)
+#    newrelic.agent.record_exception(exc=exc, value=value, tb=tb,
+#        params={
+#            'error_type': SERVER_ERROR,
+#            'error_prelude': 'Unexpected service error',
+#        },
+#    )
+
 class ServiceMeta(type):
 
     def __init__(cls, name, bases, attrs):
@@ -437,3 +461,6 @@ class Service(object):
         if not self.__serializer:
             self.__serializer = JsonSerializer()
         return self.__serializer
+
+
+wrap_unexpected_error()
