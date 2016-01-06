@@ -10,8 +10,6 @@ from ...constants import *
 from ...exceptions import ActionFieldError
 
 
-import newrelic.agent
-
 
 class Action(Model):
     """A single action/endpoint for a service.
@@ -26,7 +24,6 @@ class Action(Model):
         """Entry point into the Action, invoked by the service."""
         rpc_kwargs = action_klass.pre_init(**rpc_kwargs)
 
-        newrelic.agent.set_transaction_name(action_klass.__name__, group='Python/Servant/Action')
         try:
             return action_klass(raw_data=rpc_kwargs,
                         deserialize_mapping=deserialize_mapping, strict=strict)
@@ -72,7 +69,6 @@ class Action(Model):
         """Hook *before* ``execute_run`` is called."""
         self._service = service
         self.logger = service.logger
-        #newrelic.agent.set_transaction_name(self.__class__.__name__)
 
     def post_run(self):
         """Hook *after* ``execute_run`` is called."""
@@ -95,11 +91,6 @@ class Action(Model):
         # validate input arguments
         if self.is_valid():
             action_kwargs = self.get_action_kwargs()
-
-            import random
-            if random.random() > 0.75:
-                raise Exception('error!')
-
             self.run(**action_kwargs)
 
         # revalidate since the run method could have attached some new
@@ -166,22 +157,3 @@ class Action(Model):
         except ValidationError, err:
             self._errors = err.messages
             return False
-
-
-def wrap_action():
-
-    def _nr_get_instance(func):
-
-        unwrapped_func = func.__func__
-
-        def wrapped(action_klass, *args, **kwargs):
-            print action_klass, args, kwargs
-            newrelic.agent.set_transaction_name(action_klass.__name__, group='Python/Servant/Action')
-            return unwrapped_func(action_klass, *args, **kwargs)
-
-        return classmethod(wrapped)
-
-    Action.get_instance = _nr_get_instance(Action.get_instance)
-
-wrap_action()
-print Action.get_instance
