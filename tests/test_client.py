@@ -14,9 +14,10 @@ def clientv2():
 
 
 def test_calculator_v1(clientv1):
+    # backwards subtraction in v1
     response = clientv1.subtract(number1=11, number2=2)
     assert not response.is_error()
-    assert response.result == 9
+    assert response.result == -9
 
 def test_calculator_v1_no_multiply(clientv1):
     response = clientv1.multiply(number1=10, number2=20)
@@ -42,7 +43,7 @@ def test_calculator_v2_multiply(clientv2):
 def test_calculator_v2_subtract_has_been_overriden(clientv2):
     response = clientv2.subtract(number1=11, number2=2)
     assert not response.is_error()
-    assert response.result == -9
+    assert response.result == 9
 
 
 def test_client_version():
@@ -59,3 +60,19 @@ def test_invalid_version():
         client.add(number1=10, number2=22)
 
     assert 'Could not find appropriate Service class' in str(execinfo.value)
+
+
+def test_compound_action_no_error(clientv2):
+    e = "( ( 10 + 5 ) / 3 ) * ( 10 + 2 ) + 3 - 1"
+    response = clientv2.calculate(expression=e)
+    assert not response.is_error()
+    assert response.result == eval(e)
+
+
+def test_compound_action_deep_error(clientv2):
+    # This action is setup to return zero when there is a deep error
+    e = "( 10 / 0 ) * 3"
+    response = clientv2.calculate(expression=e)
+    print response.text
+    assert not response.is_error()
+    assert response.result == 0

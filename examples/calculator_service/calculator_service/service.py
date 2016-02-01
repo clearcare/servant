@@ -10,7 +10,7 @@ class CalculatorService(Service):
 
     action_map = {
             'add': actions.AddAction,
-            'subtract': actions.SubtractAction,
+            'subtract': actions.BackwardSubtractAction,
             'divide': actions.DivideAction,
     }
 
@@ -19,5 +19,6 @@ class CalculatorServiceV2(CalculatorService):
     version = 2
     action_map = {
             'multiply': actions.MultiplyAction,
-            'subtract': actions.BackwardSubtractAction,
+            'subtract': actions.SubtractAction,
+            'calculate': actions.CalculateAction,
     }
