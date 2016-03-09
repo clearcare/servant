@@ -3,11 +3,11 @@ from setuptools import setup, find_packages
 setup(
     name='servant',
     packages=find_packages(exclude=['test', 'examples', 'examples.*']),
-    version = '0.1.0',
+    version = '0.1.1',
     description = 'A library for building services',
     author='Brian Zambrano',
-    author_email='brianz@gmail.com',
-    url='https://github.com/brianz/servant',
+    author_email='brianz@clearcareonline.com',
+    url='https://github.com/clearcare/servant',
     install_requires=[
         'requests>=2.4.3',
         'schematics==1.0.3',
