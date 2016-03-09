@@ -50,7 +50,7 @@ class Config(MutableMapping):
         try:
             module = importlib.import_module(module_name)
         except ImportError as e:
-            e.strerror = 'Unable to load configuration file (%s)' % e.strerror
+            e.args = ('Unable to load configuration file (%s)' % e.args[0], )
             raise
 
         self.from_object(module)
