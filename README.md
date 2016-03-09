@@ -1,6 +1,6 @@
 # Servant
 
-[![Build Status](https://travis-ci.org/brianz/servant.svg?branch=master)](https://travis-ci.org/brianz/servant)
+[![Build Status](https://travis-ci.org/clearcare/servant.svg?branch=master)](https://travis-ci.org/clearcare/servant)
 
 A python package to build services/microservices.
 
