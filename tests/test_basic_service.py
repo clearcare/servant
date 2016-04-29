@@ -17,7 +17,7 @@ def test_test_client_values(test_client):
 def test_test_client_errors(test_client):
     response = test_client.say_name(age='abc')
     assert response.is_error()
-    assert response.field_errors.age[0].error == "Value 'abc' is not int"
+    assert "Value 'abc' is not int" in response.field_errors.age[0].error
     assert not response.errors
 
 
