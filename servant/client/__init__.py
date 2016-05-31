@@ -34,6 +34,8 @@ class Client(object):
     def configure(self, broker_type='local', **kwargs):
         if self.__transport is None:
             self.__transport = self.get_transport(broker_type)
+            kwargs['service_name'] = self.service_name
+            kwargs['service_version'] = self.service_version
             self.__transport.configure(**kwargs)
             self.__transport.connect()
 
