@@ -235,17 +235,17 @@ class Service(object):
     def get_wsgi_application(self, environ, start_response):
         """Pre-baked hook for running wsgi applications via http transport."""
         # TODO - This could eventually be moved out into a separate service object.
-
-        # Note, space is required after status to conform to wsgi spec.
-        status = '200 '
-        headers = [
-                ('Content-Type', 'application/json'),
-        ]
-        start_response(status, headers)
-
         content_length = int(environ['CONTENT_LENGTH'])
         payload = environ['wsgi.input'].read(content_length)
         response = self.handle_request(payload)
+
+        status = '200 OK'
+        headers = [
+                ('Content-Type', 'application/json'),
+                ('Content-Length', str(len(response))),
+        ]
+        start_response(status, headers)
+
         return [response]
 
     def begin_response(self):
