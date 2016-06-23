@@ -13,7 +13,7 @@ class LocalTransport(BaseTransport):
     def __repr__(self):
         return self.__class__.__name__
 
-    def configure(self, service_name='', service_version='', service_meta=None):
+    def configure(self, service_name='', service_version='', service_meta=None, **kwargs):
         instance = self._import_service_and_instantiate_service(service_name, service_version)
         self.service = instance
 
