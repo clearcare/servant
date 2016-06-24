@@ -60,6 +60,10 @@ class Service(object):
         if do_configure:
             self.configure()
 
+    def __str__(self):
+        return 'Client: {0}\nConfig: {1}'.format(
+            str(self.__client), str(self.config))
+
     @property
     def logger(self):
         return self.get_logger()
