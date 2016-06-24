@@ -28,6 +28,10 @@ class Client(object):
     def __getattr__(self, name):
         return self.send(name)
 
+    def __str__(self):
+        return 'Service Name: {0}\nService Version: {1}\nTransport: {2}'.format(
+            self.service_name, self.service_version, str(self.__transport))
+
     def is_configured(self):
         return self.__transport is not None
 
@@ -154,4 +158,3 @@ class InternalClient(object):
             return response
 
         return make_call
-

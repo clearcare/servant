@@ -25,6 +25,10 @@ class Response(object):
             raise AttributeError("'%s' object has no attribute '%s'" % (
                     self.__class__.__name__, name))
 
+    def __str__(self):
+        return 'Object: {0}\nData: {1}'.format(
+            str(self.__object), str(self.__data))
+
     @classmethod
     def fromDict(klass, data):
         return klass(data)
@@ -83,4 +87,3 @@ class Response(object):
                 return True
 
         return False
-
