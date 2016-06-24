@@ -125,7 +125,7 @@ class HistoricalWeatherSearchAction(Action):
         return response.json()
 
 
-class MovieField(Action):
+class MovieField(servant.fields.ContainerField):
     name = servant.fields.StringField()
     director = servant.fields.StringField()
     release_date = servant.fields.DateTimeField()
@@ -138,10 +138,10 @@ class TheaterListingAction(Action):
     )
     theater_name = servant.fields.StringField(
             in_response=True,
-            max_length=12
+            max_length=48,
     )
     movies = servant.fields.ListField(
-            servant.fields.ModelField(MovieField),
+            MovieField,
             in_response=True,
     )
 
@@ -157,7 +157,6 @@ class TheaterListingAction(Action):
                     'director': 'Peter Farrelly, Bobby Farrelly',
                     'release_date': datetime(2014, 11, 5)},
                 ),
-                'brian',
         ]
 
     def run(self, **kwargs):
