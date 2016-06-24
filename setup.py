@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='servant',
     packages=find_packages(exclude=['test', 'examples', 'examples.*']),
-    version = '0.1.3',
+    version = '0.1.4',
     description = 'A library for building services',
     author='Brian Zambrano',
     author_email='brianz@clearcareonline.com',
