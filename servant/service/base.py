@@ -410,7 +410,7 @@ class Service(object):
                 field_errors = errs.get(fieldname, [])
 
                 if isinstance(err, list):
-                    err = ', '.join(err)
+                    err = ', '.join([str(msg) for msg in err])
 
                 field_errors.append({
                         'error': err,
