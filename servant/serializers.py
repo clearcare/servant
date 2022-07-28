@@ -31,5 +31,5 @@ class JsonSerializer(object):
     def deserialize(self, data):
         try:
             return json.loads(data)
-        except ValueError, err:
+        except ValueError as err:
             raise SerializationError(err.message)
