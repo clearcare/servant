@@ -139,9 +139,9 @@ class Service(object):
             deserialized_request_payload = self.deserialize_request(payload)
             actions = self.prepare_request(deserialized_request_payload)
             action_results = self.run_actions(actions)
-        except ServantException, err:
+        except ServantException as err:
             self.handle_service_error(err)
-        except Exception, err:
+        except Exception as err:
             self.handle_unexpected_error(err)
 
         self.finalize_response(response, action_results)
@@ -213,11 +213,11 @@ class Service(object):
                             error_type=err['error_type'],
                             hint=err['hint'],
                     )
-        except ActionError, err:
+        except ActionError as err:
             error = self.handle_client_error(err)
             # set the action errors to be this one error
             action_errors = [error]
-        except ActionFieldError, err:
+        except ActionFieldError as err:
             field_errors = self.handle_field_error(err)
             action_errors = [{
                 'error': 'field_errors',
@@ -285,7 +285,7 @@ class Service(object):
         serializer = self.get_serializer()
         try:
            return serializer.deserialize(request_payload)
-        except ServantException, err:
+        except ServantException as err:
             self.handle_unexpected_error(err)
 
     def serialize_response(self, response):
@@ -340,7 +340,7 @@ class Service(object):
         # assume we only have 1 action for now
         try:
             actions = request['actions']
-        except KeyError, err:
+        except KeyError as err:
             self.add_service_error('No actions found', CLIENT_ERROR)
 
         if not isinstance(actions, list):
