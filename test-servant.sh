@@ -15,13 +15,15 @@ ls /usr/bin/pip*
 python3.11 --version
 pip3.11 --version
 
-pip install pytest
-pip install -r test_requirements.txt
+pip3.11 install pytest
+pip3.11 install -r test_requirements.txt
 
 echo "WORKING DIR $(pwd)"
 
 git fetch
 
+pytest --version
 pytest
+
 
 
