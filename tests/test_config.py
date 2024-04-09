@@ -1,7 +1,10 @@
 import os
 import pytest
 
-from mock import patch
+try:
+    from mock import patch
+except ImportError: # python3.8+
+    from mock import patch
 
 from servant.config import Config
 
