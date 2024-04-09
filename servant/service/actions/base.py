@@ -26,7 +26,7 @@ class Action(Model):
         try:
             return action_klass(raw_data=rpc_kwargs,
                         deserialize_mapping=deserialize_mapping, strict=strict)
-        except ConversionError, err:
+        except ConversionError as err:
             raise ActionFieldError(err)
 
     @classmethod
