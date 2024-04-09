@@ -1,5 +1,7 @@
 import time
 import requests
+import six
+if six.PY3: unicode = str
 
 from ..config import Config
 from ..constants import *
