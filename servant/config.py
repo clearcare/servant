@@ -1,7 +1,10 @@
 import importlib
 import os
 
-from collections import MutableMapping
+try:
+    from collections import MutableMapping
+except: # for >=python3.8
+    from collections.abc import MutableMapping
 
 
 class Config(MutableMapping):

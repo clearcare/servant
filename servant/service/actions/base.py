@@ -1,3 +1,4 @@
+import six
 from schematics.models import Model
 from schematics.exceptions import (
         ConversionError,
@@ -26,7 +27,7 @@ class Action(Model):
         try:
             return action_klass(raw_data=rpc_kwargs,
                         deserialize_mapping=deserialize_mapping, strict=strict)
-        except ConversionError, err:
+        except ConversionError as err:
             raise ActionFieldError(err)
 
     @classmethod
@@ -101,7 +102,7 @@ class Action(Model):
         try:
             self.validate()
             final_results = self.finalize_results()
-        except ModelValidationError, err:
+        except ModelValidationError as err:
             raise ActionFieldError(err)
 
         return final_results
@@ -132,7 +133,7 @@ class Action(Model):
         raise NotImplementedError('Clients must implement this method')
 
     def _response_names_and_fields_iter(self):
-        for fieldname, field in self._fields.iteritems():
+        for fieldname, field in six.iteritems(self._fields):
             if getattr(field, 'in_response', None):
                 yield (fieldname, field)
 
@@ -153,6 +154,6 @@ class Action(Model):
         try:
             self.validate()
             return True
-        except ValidationError, err:
+        except ValidationError as err:
             self._errors = err.messages
             return False

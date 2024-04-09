@@ -1,4 +1,5 @@
 import pytest
+import six
 
 from servant.constants import *
 from servant.client import Response
@@ -112,7 +113,7 @@ def test_error_from_response():
 
 def test_response_text(response):
     assert  isinstance(response, Response)
-    assert isinstance(response.text, basestring)
+    assert isinstance(response.text, six.string_types)
 
 def test_response_to_native(response):
     assert isinstance(response.to_native(), dict)

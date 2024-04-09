@@ -1,7 +1,10 @@
 import os
 import pytest
 
-from mock import patch
+try:
+    from mock import patch
+except ImportError: # python3.8+
+    from unittest.mock import patch
 
 from servant.config import Config
 
@@ -38,7 +41,8 @@ def test_config_from_module(config):
 def test_config_from_bad_module(config):
     with pytest.raises(ImportError) as e:
         config.from_module('foobar')
-    assert 'Unable to load configuration file (No module named foobar)' in str(e)
+    assert 'Unable to load configuration file (No module named' in str(e)
+    assert 'foobar' in str(e)
 
 @patch.dict(os.environ, {'CALC_SERVICE_CONFIG': 'calculator_service.config'})
 def test_config_from_env_var(config):
