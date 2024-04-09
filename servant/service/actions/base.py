@@ -1,3 +1,4 @@
+import six
 from schematics.models import Model
 from schematics.exceptions import (
         ConversionError,
@@ -132,7 +133,7 @@ class Action(Model):
         raise NotImplementedError('Clients must implement this method')
 
     def _response_names_and_fields_iter(self):
-        for fieldname, field in self._fields.iteritems():
+        for fieldname, field in six.iteritems(self._fields):
             if getattr(field, 'in_response', None):
                 yield (fieldname, field)
 

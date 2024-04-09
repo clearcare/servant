@@ -26,7 +26,7 @@ class ServiceMeta(type):
             if not base.__class__ == ServiceMeta:
                 continue
 
-            for key, val in getattr(base, 'action_map').iteritems():
+            for key, val in six.iteritems(getattr(base, 'action_map')):
                 if key not in action_map:
                     action_map[key] = val
 
@@ -40,9 +40,8 @@ class ServiceMeta(type):
         return cls.action_map
 
 
+@six.add_metaclass(ServiceMeta)
 class Service(object):
-
-    __metaclass__ = ServiceMeta
 
     def __init__(self, do_configure=True):
         if not hasattr(self, 'name'):
@@ -408,7 +407,7 @@ class Service(object):
             if hasattr(errmsg, 'messages'):
                 errmsg = errmsg.messages
 
-            for fieldname, err in errmsg.iteritems():
+            for fieldname, err in six.iteritems(errmsg):
                 field_errors = errs.get(fieldname, [])
 
                 if isinstance(err, list):
