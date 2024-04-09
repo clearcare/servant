@@ -101,7 +101,7 @@ class Action(Model):
         try:
             self.validate()
             final_results = self.finalize_results()
-        except ModelValidationError, err:
+        except ModelValidationError as err:
             raise ActionFieldError(err)
 
         return final_results
@@ -153,6 +153,6 @@ class Action(Model):
         try:
             self.validate()
             return True
-        except ValidationError, err:
+        except ValidationError as err:
             self._errors = err.messages
             return False
