@@ -4,4 +4,5 @@ __version__ = '0.1.0'
 import collections
 import collections.abc
 collections.Iterable = collections.abc.Iterable
+collections.Set = collections.abc.Set
 
