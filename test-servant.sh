@@ -4,8 +4,6 @@ sudo add-apt-repository universe
 sudo apt update
 sudo apt-get install -y python3.11
 sudo apt-get install -y python3.11-distutils
-#sudo apt-get install -y python3.11-pip
-#python3.11 -m ensurepip
 
 curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
 sudo python3.11 get-pip.py
@@ -27,17 +25,6 @@ git fetch
 which pytest
 
 export PYTHONPATH=`pwd`
-pytest --version
-pytest
-
-sudo apt-get install -y python2
-curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-sudo python2 get-pip.py
-
-pip2 install pytest
-pip2 install -r requirements.txt
-pip2 install -r test_requirements.txt
-which pytest
 pytest --version
 pytest
 
