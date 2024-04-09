@@ -50,10 +50,10 @@ def do_multiply(client):
         print(response.result)
 
 
-calc_client.configure('http', host='192.168.88.100', port=8888)
-calc_client2.configure('http', host='192.168.88.100', port=8888)
+##calc_client.configure('http', host='192.168.88.100', port=8888)
+##calc_client2.configure('http', host='192.168.88.100', port=8888)
 
-do_divide(calc_client)
+##do_divide(calc_client)
 
 #response = simple_client.get_theater_listing(theater_id=123)
 #if not response.is_error():
@@ -63,6 +63,6 @@ do_divide(calc_client)
 #    print(response.text)
 #
 
-do_add(calc_client2)
+##do_add(calc_client2)
 #calc_client2.service_name = 'fooely'
 #do_multiply(calc_client2)
