@@ -9,7 +9,7 @@ calc_client2 = servant.client.Client('calculator_service', version=2)
 # client.configure('http', host='192.168.88.100', port=8888)
 
 def _handle_error(response):
-    print response.errors, response.field_errors
+    print('%s %s' % (response.errors, response.field_errors))
 
 
 def do_add(client):
@@ -18,7 +18,7 @@ def do_add(client):
     if response.is_error():
         _handle_error(response)
     else:
-        print response.result
+        print(response.result)
 
 
 def do_subtract(client):
@@ -27,7 +27,7 @@ def do_subtract(client):
     if response.is_error():
         _handle_error(response)
     else:
-        print response.result
+        print(response.result)
 
 
 def do_divide(client):
@@ -39,15 +39,15 @@ def do_divide(client):
     if response.is_error():
         _handle_error(response)
     else:
-        print '%s / %s = %s' % (response.numerator, response.denominator, response.quotient)
+        print('%s / %s = %s' % (response.numerator, response.denominator, response.quotient))
 
 def do_multiply(client):
     response = client.multiply(number1=12, number2=12)
 
     if response.is_error():
-        print response.errors
+        print(response.errors)
     else:
-        print response.result
+        print(response.result)
 
 
 calc_client.configure('http', host='192.168.88.100', port=8888)
@@ -58,9 +58,9 @@ do_divide(calc_client)
 #response = simple_client.get_theater_listing(theater_id=123)
 #if not response.is_error():
 #    for movie in response.movies:
-#        print movie
+#        print(movie)
 #else:
-#    print response.text
+#    print(response.text)
 #
 
 do_add(calc_client2)

@@ -17,8 +17,8 @@ if not client.is_configured():
     client.configure('local')
 
 def line():
-    print
-    print '-' * 50
+    print()
+    print('-' * 50)
 
 #resp = client.ping()
 #line()
