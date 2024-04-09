@@ -30,3 +30,14 @@ export PYTHONPATH=`pwd`
 pytest --version
 pytest
 
+sudo apt-get install -y python2
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+sudo python2 get-pip.py
+
+pip2 install pytest
+pip2 install -r requirements.txt
+pip2 install -r test_requirements.txt
+which pytest
+pytest --version
+pytest
+
