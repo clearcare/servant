@@ -1,6 +1,7 @@
 from servant.service.base import Service
 
-import actions
+from .actions import AddACtion, SubtractAction, DivideAction
+from .actions import MultiplyAction, BackwardSubtractAction
 
 
 class CalculatorService(Service):
@@ -9,15 +10,15 @@ class CalculatorService(Service):
     version = 1
 
     action_map = {
-            'add': actions.AddAction,
-            'subtract': actions.SubtractAction,
-            'divide': actions.DivideAction,
+            'add': AddAction,
+            'subtract': SubtractAction,
+            'divide': DivideAction,
     }
 
 
 class CalculatorServiceV2(CalculatorService):
     version = 2
     action_map = {
-            'multiply': actions.MultiplyAction,
-            'subtract': actions.BackwardSubtractAction,
+            'multiply': MultiplyAction,
+            'subtract': BackwardSubtractAction,
     }
