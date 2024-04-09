@@ -11,7 +11,7 @@ setup(
     install_requires=[
         'requests>=2.4.3',
         'schematics==1.1.1',
-        'bunch==1.0.1',
+        'munch==2.5.0',
     ],
     tests_require=[
         'pytest>=2.6.4',

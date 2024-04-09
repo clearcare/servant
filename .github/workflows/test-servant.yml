@@ -1,0 +1,18 @@
+
+name: test-servant
+run-name: $${{ github.actor }} ist testing servant with python3.11
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+    paths:
+      - '**'
+
+jobs:
+  run-servant-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: test-servant-step
+      run: bash test-servant.sh
+

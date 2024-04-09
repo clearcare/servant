@@ -1,2 +1,2 @@
 from .base import Action
-from stdactions import *
+from .stdactions import *

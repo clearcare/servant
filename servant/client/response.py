@@ -1,13 +1,13 @@
 from pprint import pformat
 
-import bunch
+import munch
 
 
 class Response(object):
 
     def __init__(self, data):
         self.__data = data
-        self.__object = bunch.Bunch.fromDict(data)
+        self.__object = munch.Munch.fromDict(data)
 
         self.__num_actions = len(self.__object.actions)
 
