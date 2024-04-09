@@ -23,9 +23,9 @@ echo "WORKING DIR $(pwd)"
 
 git fetch
 
-ls /usr/bin/*pytest*
-ls /usr/local/bin/*pytest*
+which pytest
 
+export PYTHONPATH=`pwd`
 pytest --version
 pytest
 
