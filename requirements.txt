@@ -1,3 +1,4 @@
 requests>=2.4.3
 schematics==1.1.1
 munch==2.5.0
+urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
